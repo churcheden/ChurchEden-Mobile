@@ -66,6 +66,40 @@ export interface UserProfile {
   avatarUrl?: string;
 }
 
+export interface Church {
+  id: string;
+  name: string;
+  city?: string;
+  region?: string;
+  country?: string;
+  address?: string;
+  imageUrl?: string;
+  iconType?: 'cross' | 'leaf' | 'bible' | 'heart' | 'mountain' | 'crown' | 'church';
+  iconBgColor?: string;
+  isRegistered: boolean;
+  shortDescription?: string;
+  description?: string;
+  memberCount?: number;
+  serviceCount?: number;
+  serviceTimes?: string[];
+  foundedYear?: number;
+  expectations?: string[];
+  estimatedApprovalTime?: string;
+  distance?: string;
+  isFavorite?: boolean;
+  status?: 'active' | 'pending' | 'verified';
+}
+
+export interface ChurchJoinRequest {
+  id: string;
+  churchId: string;
+  churchName: string;
+  churchLocation?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  submittedAt: string;
+  estimatedApprovalTime?: string;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data: T;

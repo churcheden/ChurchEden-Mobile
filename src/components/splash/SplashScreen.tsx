@@ -11,10 +11,12 @@ import {
 import { router } from 'expo-router';
 import { ChurchEdenLogo } from '../common/ChurchEdenLogo';
 
+import churchService from '../../services/churchService';
+
 interface SplashScreenProps {
   /**
    * Optional custom callback when splash duration finishes.
-   * If omitted, defaults to navigating to `/(tabs)`.
+   * If omitted, defaults to navigating to `/find-church` (or `/pending-approval` if request active).
    */
   onFinish?: () => void;
   /**
@@ -69,7 +71,12 @@ export function SplashScreen({ onFinish, durationMs = 3000 }: SplashScreenProps)
       if (onFinish) {
         onFinish();
       } else {
-        router.replace('/(tabs)');
+        const activeRequest = churchService.getActiveJoinRequest();
+        if (activeRequest && activeRequest.status === 'pending') {
+          router.replace('/pending-approval');
+        } else {
+          router.replace('/find-church');
+        }
       }
     }, durationMs);
 

@@ -5,16 +5,14 @@ import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useLoadedAssets } from '../src/hooks/useLoadedAssets';
 import { Colors } from '../src/constants/Colors';
 
+const SPLASH_BACKGROUND = '#F5F0E8';
+
 export default function RootLayout() {
   const isLoaded = useLoadedAssets();
   const theme = Colors.dark;
 
   if (!isLoaded) {
-    return (
-      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
-        <ActivityIndicator size="large" color={theme.primary} />
-      </View>
-    );
+    return <View style={[styles.loadingContainer, { backgroundColor: SPLASH_BACKGROUND }]} />;
   }
 
   return (

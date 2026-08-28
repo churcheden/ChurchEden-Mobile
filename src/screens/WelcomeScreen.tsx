@@ -95,7 +95,12 @@ export function WelcomeScreen() {
       >
         {/* Top branding */}
         <View style={styles.branding}>
-          <Image source={CHURCH_EDEN_LOGO_SRC} style={styles.logoImage} resizeMode="contain" />
+          <Image
+            source={CHURCH_EDEN_LOGO_SRC}
+            style={styles.logoImage}
+            resizeMode="contain"
+            fadeDuration={0}
+          />
           <Text style={styles.wordmark}>ChurchEden</Text>
           <Text style={styles.tagline}>FAITH. PEOPLE. PURPOSE.</Text>
         </View>

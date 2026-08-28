@@ -24,14 +24,11 @@ import { PaymentMethodCard } from '../components/wallet/PaymentMethodCard';
 
 const C = {
   background: '#F9F8F4',
-  surface: '#FFFFFF',
   navy: '#10233F',
   muted: '#63738A',
   mutedLight: '#8A99AD',
   green: '#4F7F48',
   greenSoft: '#EDF4EA',
-  gold: '#D6A019',
-  border: '#E8E8E3',
   headerBtn: '#F1EFEA',
   white: '#FFFFFF',
 } as const;

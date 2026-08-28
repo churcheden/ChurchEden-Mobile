@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Colors } from '../../src/constants/Colors';
 import { Header } from '../../src/components/common/Header';
 import { Card } from '../../src/components/common/Card';
 import { Button } from '../../src/components/common/Button';
 import { Badge } from '../../src/components/common/Badge';
 import { Donation } from '../../src/types';
-import { HeartHandshake, CreditCard, ShieldCheck, CheckCircle, Smartphone } from 'lucide-react-native';
+import { HeartHandshake, CreditCard, ShieldCheck, CheckCircle, Smartphone, ChevronRight } from 'lucide-react-native';
 
 const CATEGORIES = ['Tithe', 'Offering', 'Building Fund', 'Missions', 'Special Seed'] as const;
 const PRESET_AMOUNTS = [25, 50, 100, 250, 500];
@@ -14,6 +15,7 @@ const GATEWAYS: Array<Donation['paymentGateway']> = ['Paystack', 'Flutterwave', 
 
 export default function DonationsScreen() {
   const theme = Colors.dark;
+  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState<Donation['category']>('Tithe');
   const [selectedAmount, setSelectedAmount] = useState<number>(100);
   const [customAmount, setCustomAmount] = useState<string>('');
@@ -43,6 +45,20 @@ export default function DonationsScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
+        {/* Payment method selection */}
+        <TouchableOpacity
+          style={styles.methodEntry}
+          onPress={() => router.push('/payment-method')}
+          accessibilityRole="button"
+          accessibilityLabel="Choose a payment method"
+        >
+          <View style={[styles.methodEntryLeft, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+            <CreditCard size={20} color={theme.primary} />
+            <Text style={[styles.methodEntryText, { color: theme.textPrimary }]}>Choose Payment Method</Text>
+          </View>
+          <ChevronRight size={18} color={theme.textSecondary} />
+        </TouchableOpacity>
+
         {/* Category Picker */}
         <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>Select Giving Category</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryRow}>
@@ -169,6 +185,26 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: 'Inter-Bold',
     marginTop: 4,
+  },
+  methodEntry: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+  },
+  methodEntryLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  methodEntryText: {
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
   categoryRow: {
     gap: 8,

@@ -1,0 +1,61 @@
+{
+  "cli": {
+    "version": ">= 10.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_ENV": "development",
+        "EXPO_PUBLIC_API_URL": "https://dev-api.churcheden.app/v1",
+        "EXPO_PUBLIC_BUNDLE_ID": "com.churcheden.app.dev",
+        "EXPO_PUBLIC_PACKAGE_NAME": "com.churcheden.app.dev"
+      },
+      "ios": {
+        "simulator": true
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_ENV": "staging",
+        "EXPO_PUBLIC_API_URL": "https://staging-api.churcheden.app/v1",
+        "EXPO_PUBLIC_BUNDLE_ID": "com.churcheden.app.staging",
+        "EXPO_PUBLIC_PACKAGE_NAME": "com.churcheden.app.staging"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_ENV": "production",
+        "EXPO_PUBLIC_API_URL": "https://api.churcheden.app/v1",
+        "EXPO_PUBLIC_BUNDLE_ID": "com.churcheden.app",
+        "EXPO_PUBLIC_PACKAGE_NAME": "com.churcheden.app"
+      },
+      "ios": {
+        "image": "latest"
+      },
+      "android": {
+        "buildType": "app-bundle"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "admin@churcheden.app",
+        "ascAppId": "1234567890",
+        "appleTeamId": "YOUR_APPLE_TEAM_ID"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "production"
+      }
+    }
+  }
+}

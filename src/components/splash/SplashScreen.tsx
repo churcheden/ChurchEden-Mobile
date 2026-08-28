@@ -7,11 +7,15 @@ import {
   SafeAreaView,
   Platform,
   Dimensions,
+  Image,
 } from 'react-native';
 import { router } from 'expo-router';
-import { ChurchEdenLogo } from '../common/ChurchEdenLogo';
 
 import churchService from '../../services/churchService';
+
+// Official ChurchEden logo (transparent PNG). Kept as the single source of
+// truth for branding across screens.
+export const CHURCH_EDEN_LOGO_SRC = require('../../assets/images/Just-logo-transparent.png');
 
 interface SplashScreenProps {
   /**
@@ -29,28 +33,25 @@ interface SplashScreenProps {
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export function SplashScreen({ onFinish, durationMs = 3000 }: SplashScreenProps) {
-  // Animated opacity values for staggered fade-in
-  const logoOpacity = useRef(new Animated.Value(0)).current;
+  // Animated opacity values for branding elements.
+  // The logo starts fully visible so it shows the instant the splash renders;
+  // the wordmark and tagline fade in quickly for polish.
+  const logoOpacity = useRef(new Animated.Value(1)).current;
   const wordmarkOpacity = useRef(new Animated.Value(0)).current;
   const taglineOpacity = useRef(new Animated.Value(0)).current;
   const screenOpacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    // 1. Staggered fade-in animations for branding elements
-    const animationGroup = Animated.stagger(250, [
-      Animated.timing(logoOpacity, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true,
-      }),
+    // 1. Fade-in the wordmark and tagline (logo is already visible).
+    const animationGroup = Animated.stagger(120, [
       Animated.timing(wordmarkOpacity, {
         toValue: 1,
-        duration: 500,
+        duration: 350,
         useNativeDriver: true,
       }),
       Animated.timing(taglineOpacity, {
         toValue: 1,
-        duration: 500,
+        duration: 350,
         useNativeDriver: true,
       }),
     ]);
@@ -75,7 +76,7 @@ export function SplashScreen({ onFinish, durationMs = 3000 }: SplashScreenProps)
         if (activeRequest && activeRequest.status === 'pending') {
           router.replace('/pending-approval');
         } else {
-          router.replace('/find-church');
+          router.replace('/welcome');
         }
       }
     }, durationMs);
@@ -93,9 +94,14 @@ export function SplashScreen({ onFinish, durationMs = 3000 }: SplashScreenProps)
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.centeredWrapper}>
           <View style={styles.brandingGroup}>
-            {/* 1. ChurchEden Gold Logo */}
+            {/* 1. ChurchEden Logo (fadeDuration 0 = instant, no decode cross-fade) */}
             <Animated.View style={{ opacity: logoOpacity }}>
-              <ChurchEdenLogo size={135} color="#C98A16" />
+              <Image
+                source={CHURCH_EDEN_LOGO_SRC}
+                style={styles.logoImage}
+                resizeMode="contain"
+                fadeDuration={0}
+              />
             </Animated.View>
 
             {/* 2. ChurchEden Wordmark */}
@@ -131,6 +137,10 @@ const styles = StyleSheet.create({
   brandingGroup: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  logoImage: {
+    width: 150,
+    height: 150,
   },
   wordmarkContainer: {
     marginTop: 24,

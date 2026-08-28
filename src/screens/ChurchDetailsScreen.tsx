@@ -93,23 +93,13 @@ export function ChurchDetailsScreen() {
 
   const handleConfirmJoin = async () => {
     if (!church) return;
-    setIsSubmitting(true);
-    try {
-      const response = await churchService.requestToJoinChurch(church.id);
-      if (response.success) {
-        setShowConfirmModal(false);
-        router.replace({
-          pathname: '/pending-approval',
-          params: { churchId: church.id },
-        });
-      } else {
-        alert(response.error || 'Failed to submit request.');
-      }
-    } catch (err: any) {
-      alert('Network error while sending request.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Route through the "Complete Your Profile" step before submitting the
+    // join request, so the church admin has the requester's details.
+    setShowConfirmModal(false);
+    router.push({
+      pathname: '/complete-profile',
+      params: { churchId: church.id },
+    });
   };
 
   if (isLoading) {

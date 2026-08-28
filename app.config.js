@@ -21,9 +21,9 @@ module.exports = ({ config }) => {
     userInterfaceStyle: 'dark',
     newArchEnabled: true,
     splash: {
-      image: './src/assets/images/splash-icon.png',
+      image: './src/assets/images/Just-logo-transparent.png',
       resizeMode: 'contain',
-      backgroundColor: '#0F172A'
+      backgroundColor: '#F5F0E8'
     },
     ios: {
       supportsTablet: true,

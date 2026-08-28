@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -25,6 +25,16 @@ export function PendingApprovalScreen() {
   const activeRequest = churchService.getActiveJoinRequest();
   const churchName = activeRequest?.churchName || 'Grace Community Church';
   const estimatedTime = activeRequest?.estimatedApprovalTime || '1–3 business days';
+
+  // TEMPORARY DEMO BEHAVIOR (backend not active yet):
+  // Simulate approval shortly after the request is sent, dropping the member
+  // straight into their dashboard. Remove once real approval flows are live.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      router.replace('/(tabs)');
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleChangeRequest = () => {
     churchService.clearActiveJoinRequest();

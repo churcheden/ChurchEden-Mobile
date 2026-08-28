@@ -106,3 +106,30 @@ export interface ApiResponse<T> {
   message?: string;
   error?: string;
 }
+
+export type AnnouncementType = 'sermon' | 'community' | 'calendar' | 'general';
+
+export interface Announcement {
+  id: string;
+  title: string;
+  description: string;
+  type: AnnouncementType;
+  date: string;
+  author: string;
+}
+
+export interface NextService {
+  dayLabel: string;
+  dateLabel: string;
+  time: string;
+  location: string;
+}
+
+export interface MemberDashboardData {
+  member: Member;
+  church: Church;
+  nextService: NextService | null;
+  upcomingEvents: ChurchEvent[];
+  recentAnnouncements: Announcement[];
+  unreadNotificationCount: number;
+}

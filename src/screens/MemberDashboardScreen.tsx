@@ -26,6 +26,7 @@ import { DashboardSkeleton } from '../components/member/DashboardSkeleton';
 import { EventCarousel } from '../components/member/EventCarousel';
 import { AnnouncementRow } from '../components/member/AnnouncementRow';
 import { ChurchEdenLogo } from '../components/common/ChurchEdenLogo';
+import { ProfileAvatar } from '../components/common/ProfileAvatar';
 import Svg, { Circle } from 'react-native-svg';
 import {
   Bell,
@@ -220,18 +221,22 @@ export function MemberDashboardScreen() {
             </View>
           </View>
 
-          <TouchableOpacity
-            style={styles.iconButton}
-            activeOpacity={0.8}
-            onPress={() => {
-              // Opens the existing Notifications screen when available
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={hasUnread ? `Notifications, ${unreadCount} unread` : 'Notifications'}
-          >
-            <Bell size={20} color={MemberTheme.textPrimary} strokeWidth={2} />
-            {hasUnread && <View style={styles.unreadDot} />}
-          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              activeOpacity={0.8}
+              onPress={() => {
+                // Opens the existing Notifications screen when available
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={hasUnread ? `Notifications, ${unreadCount} unread` : 'Notifications'}
+            >
+              <Bell size={20} color={MemberTheme.textPrimary} strokeWidth={2} />
+              {hasUnread && <View style={styles.unreadDot} />}
+            </TouchableOpacity>
+
+            <ProfileAvatar size={40} />
+          </View>
         </View>
 
         {/* ===== Greeting ===== */}
@@ -514,6 +519,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 24,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   brandBlock: {
     flexDirection: 'row',

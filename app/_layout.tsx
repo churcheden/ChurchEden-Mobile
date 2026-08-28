@@ -37,6 +37,10 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="payment-method" options={{ headerShown: false, animation: 'slide_from_right' }} />
         <Stack.Screen name="payment-flow" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="giving-history" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="coming-soon" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="account/personal-information" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="profile" options={{ headerShown: false, animation: 'slide_from_right' }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Church Info' }} />
         <Stack.Screen name="+not-found" options={{ title: 'Page Not Found' }} />
       </Stack>

@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../hooks/useAuth';
 import { Bell, Sparkles } from 'lucide-react-native';
+import { ProfileAvatar } from './ProfileAvatar';
 
 interface HeaderProps {
   title?: string;
@@ -34,9 +35,7 @@ export function Header({ title, subtitle }: HeaderProps) {
           <Bell size={18} color={theme.textSecondary} />
         </TouchableOpacity>
 
-        {user?.avatarUrl && (
-          <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
-        )}
+        <ProfileAvatar size={36} />
       </View>
     </View>
   );
@@ -86,11 +85,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
   },
 });
 

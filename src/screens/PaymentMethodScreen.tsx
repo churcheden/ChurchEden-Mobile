@@ -8,7 +8,7 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useAuth } from '../hooks/useAuth';
 import {
@@ -69,6 +69,9 @@ function SupportingRow({
 export function PaymentMethodScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const params = useLocalSearchParams<{ category?: string; amount?: string }>();
+  const contextCategory = params.category || '';
+  const contextAmount = params.amount || '';
 
   const [selected, setSelected] = useState<PaymentMethodId>('momo');
 
@@ -147,7 +150,11 @@ export function PaymentMethodScreen() {
     // TODO: wire each route to its real payment flow once integrated.
     router.push({
       pathname: '/payment-flow',
-      params: { method: selectedMethod.route },
+      params: {
+        method: selectedMethod.route,
+        category: contextCategory,
+        amount: contextAmount,
+      },
     });
   };
 

@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     height: 54,
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: '#10233F',
+    backgroundColor: MemberTheme.primary,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   logoFallback: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#10233F',
+    backgroundColor: MemberTheme.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: '#10233F',
+    backgroundColor: MemberTheme.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -792,7 +792,7 @@ const styles = StyleSheet.create({
   },
   // Announcement Card specific styles
   announcementCard: {
-    backgroundColor: '#0F1E36', // Deep navy
+    backgroundColor: MemberTheme.primary, // ChurchEden Green
     borderRadius: 22,
     padding: 18,
     marginBottom: 16,

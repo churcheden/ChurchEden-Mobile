@@ -8,6 +8,23 @@ import {
   ApiResponse,
 } from '../types';
 import { churchService } from './churchService';
+import { getSelectedChurchId } from './selectedChurchStore';
+
+/**
+ * Member dashboard data, conceptually sourced from backend endpoints such as:
+ *   getCurrentMember()
+ *   getCurrentChurch()
+ *   getMembershipStatus()
+ *   getNextService()
+ *   getUpcomingEvents()
+ *   getRecentAnnouncements()
+ *   getNotificationSummary()
+ *
+ * Backed by realistic mock data with simulated network latency, mirroring the
+ * existing repository pattern used across ChurchEden services.
+ */
+
+// Removed hardcoded CURRENT_CHURCH_ID — now read dynamically from selectedChurchStore
 
 /**
  * Member dashboard data, conceptually sourced from backend endpoints such as:
@@ -126,7 +143,8 @@ class MemberDashboardService {
   }
 
   async getCurrentChurch(): Promise<ApiResponse<Church>> {
-    const res = await churchService.getChurchById(CURRENT_CHURCH_ID);
+    const churchId = await getSelectedChurchId();
+    const res = await churchService.getChurchById(churchId);
     if (!res.success) {
       return { success: false, data: null as unknown as Church, error: res.error };
     }

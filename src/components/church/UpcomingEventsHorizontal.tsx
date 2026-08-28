@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
   imagePlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#10233F',
+    backgroundColor: MemberTheme.primarySoft,
   },
   // Green ChurchEden date badge treatment
   dateBadge: {

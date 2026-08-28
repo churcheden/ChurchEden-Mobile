@@ -24,7 +24,9 @@ const P = {
   background: '#F8F7F3',
   surface: '#FFFFFF',
   surfaceBorder: '#ECE7DF',
-  navy: '#10233F',
+  green: '#3F7A3A',
+  greenDark: '#2D582A',
+  greenSoft: '#EAF2E7',
   textSecondary: '#475467',
   textMuted: '#667085',
   gold: '#C98A16',
@@ -73,7 +75,7 @@ export function MyWalletScreen() {
             accessibilityRole="button"
             accessibilityLabel="Notifications"
           >
-            <Bell size={20} color={P.navy} strokeWidth={2} />
+            <Bell size={20} color={P.green} strokeWidth={2} />
           </TouchableOpacity>
 
           <ProfileAvatar size={40} />
@@ -265,7 +267,7 @@ const styles = StyleSheet.create({
   walletTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: P.navy,
+    color: P.green,
     fontFamily: 'Inter-Bold',
   },
   walletSubtitle: {
@@ -293,7 +295,7 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   heroCard: {
-    backgroundColor: P.navy,
+    backgroundColor: P.green,
     borderRadius: 20,
     padding: 20,
     shadowColor: P.shadow,
@@ -313,7 +315,7 @@ const styles = StyleSheet.create({
   },
   heroLabel: {
     fontSize: 12,
-    color: '#B9C3D4',
+    color: 'rgba(255,255,255,0.72)',
     fontFamily: 'Inter-Regular',
   },
   heroAmount: {
@@ -328,7 +330,7 @@ const styles = StyleSheet.create({
   },
   heroLabelSmall: {
     fontSize: 11,
-    color: '#B9C3D4',
+    color: 'rgba(255,255,255,0.72)',
     fontFamily: 'Inter-Regular',
   },
   streakRow: {
@@ -357,7 +359,7 @@ const styles = StyleSheet.create({
   },
   heroLabelSmall2: {
     fontSize: 11,
-    color: '#B9C3D4',
+    color: 'rgba(255,255,255,0.72)',
     fontFamily: 'Inter-Regular',
   },
   heroPledgeText: {
@@ -394,7 +396,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: P.navy,
+    color: P.green,
     marginTop: 24,
     marginBottom: 12,
     fontFamily: 'Inter-Bold',
@@ -432,7 +434,7 @@ const styles = StyleSheet.create({
   oppTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: P.navy,
+    color: P.green,
     fontFamily: 'Inter-Bold',
   },
   oppSubtitle: {

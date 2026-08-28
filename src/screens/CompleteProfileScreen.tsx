@@ -32,6 +32,7 @@ import {
 import { router, useLocalSearchParams } from 'expo-router';
 import churchService from '../services/churchService';
 import { loadProfileDraft, saveProfileDraft } from '../services/profileStorage';
+import { setSelectedChurchId } from '../services/selectedChurchStore';
 
 const GENDERS = ['Male', 'Female', 'Prefer not to say'];
 const MARITAL_STATUSES = ['Single', 'Married', 'Divorced', 'Widowed', 'Prefer not to say'];
@@ -190,6 +191,8 @@ export function CompleteProfileScreen() {
       const response = await churchService.requestToJoinChurch(churchId);
       if (response.success) {
         await saveProfileDraft(churchId, { ...form, churchId });
+        // Persist selected church so the dashboard always shows the right church.
+        await setSelectedChurchId(churchId);
         // Keep the recorded profile; clear the draft once the request is sent.
         router.replace({
           pathname: '/pending-approval',

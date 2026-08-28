@@ -33,7 +33,7 @@ export function FeedFilterPills({
       icon: (
         <Megaphone
           size={14}
-          color={selectedFilter === 'announcements' ? '#10233F' : MemberTheme.textSecondary}
+          color={selectedFilter === 'announcements' ? MemberTheme.primary : MemberTheme.textSecondary}
           strokeWidth={2}
         />
       ),
@@ -44,7 +44,7 @@ export function FeedFilterPills({
       icon: (
         <CalendarDays
           size={14}
-          color={selectedFilter === 'events' ? '#10233F' : MemberTheme.textSecondary}
+          color={selectedFilter === 'events' ? MemberTheme.primary : MemberTheme.textSecondary}
           strokeWidth={2}
         />
       ),
@@ -55,7 +55,7 @@ export function FeedFilterPills({
       icon: (
         <Heart
           size={14}
-          color={selectedFilter === 'praise_reports' ? '#10233F' : MemberTheme.textSecondary}
+          color={selectedFilter === 'praise_reports' ? MemberTheme.primary : MemberTheme.textSecondary}
           strokeWidth={2}
         />
       ),
@@ -66,7 +66,7 @@ export function FeedFilterPills({
       icon: (
         <Users
           size={14}
-          color={selectedFilter === 'ministries' ? '#10233F' : MemberTheme.textSecondary}
+          color={selectedFilter === 'ministries' ? MemberTheme.primary : MemberTheme.textSecondary}
           strokeWidth={2}
         />
       ),
@@ -77,7 +77,7 @@ export function FeedFilterPills({
       icon: (
         <Building2
           size={14}
-          color={selectedFilter === 'projects' ? '#10233F' : MemberTheme.textSecondary}
+          color={selectedFilter === 'projects' ? MemberTheme.primary : MemberTheme.textSecondary}
           strokeWidth={2}
         />
       ),
@@ -137,8 +137,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   pillSelected: {
-    backgroundColor: '#EAF2E7', // Soft light green/gold tinted background
-    borderColor: '#3F7A3A',
+    backgroundColor: MemberTheme.primarySoft,
+    borderColor: MemberTheme.primary,
   },
   pillUnselected: {
     backgroundColor: MemberTheme.surface,
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-SemiBold',
   },
   pillTextSelected: {
-    color: '#10233F',
+    color: MemberTheme.primary,
     fontWeight: '700',
   },
   pillTextUnselected: {

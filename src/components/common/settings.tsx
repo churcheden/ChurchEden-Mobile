@@ -175,5 +175,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export { SettingsRow as ToggleRow, SettingsSection };
+export { SettingsRow as ToggleRow };
 export default SettingsRow;

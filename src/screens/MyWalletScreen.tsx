@@ -5,12 +5,11 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useAuth } from '../hooks/useAuth';
+import { ProfileAvatar } from '../components/common/ProfileAvatar';
 import {
   Bell,
   ChevronRight,
@@ -45,7 +44,6 @@ function ProgressBar({ ratio }: { ratio: number }) {
 
 export function MyWalletScreen() {
   const router = useRouter();
-  const { user } = useAuth();
 
   const goToPayment = (category: string, amount: number) => {
     router.push({
@@ -259,25 +257,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  avatarWrap: {
-    width: 42,
-    height: 42,
-  },
-  avatar: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-  },
-  avatarFallback: {
-    backgroundColor: P.goldSoft,
+  headerRight: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarInitials: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: P.gold,
-    fontFamily: 'Inter-Bold',
+    gap: 12,
   },
   walletTitle: {
     fontSize: 18,

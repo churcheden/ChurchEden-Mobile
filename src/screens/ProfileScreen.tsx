@@ -1,11 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -34,7 +33,7 @@ export function ProfileScreen() {
   const [error, setError] = useState(false);
   const [profile, setProfile] = useState<MemberProfile | null>(null);
 
-  const load = () => {
+  const load = useCallback(() => {
     setLoading(true);
     setError(false);
     loadMemberProfile(user?.avatarUrl)
@@ -47,11 +46,11 @@ export function ProfileScreen() {
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  };
+  }, [user?.avatarUrl]);
 
   useEffect(() => {
     load();
-  }, [user?.avatarUrl]);
+  }, [load]);
 
   const overview = useMemo(
     () => (profile ? toOverview(profile, user?.avatarUrl) : null),

@@ -133,3 +133,83 @@ export interface MemberDashboardData {
   recentAnnouncements: Announcement[];
   unreadNotificationCount: number;
 }
+
+export type FeedContentType =
+  | 'post'
+  | 'announcement'
+  | 'event'
+  | 'project'
+  | 'praise_report'
+  | 'ministry';
+
+export type FeedCategoryFilter =
+  | 'all'
+  | 'announcements'
+  | 'events'
+  | 'praise_reports'
+  | 'ministries'
+  | 'projects';
+
+export type ReactionType = 'like' | 'love' | 'amen' | 'celebrate' | 'wow';
+
+export interface ReactionCount {
+  type: ReactionType;
+  count: number;
+}
+
+export interface FeedComment {
+  id: string;
+  postId: string;
+  authorId: string;
+  authorName: string;
+  authorAvatar?: string;
+  authorRole?: string;
+  content: string;
+  createdAt: string;
+  likesCount: number;
+  isLikedByMe?: boolean;
+}
+
+export interface ProjectProgress {
+  totalRaised: number;
+  goal: number;
+  currency: string;
+  percentage: number;
+}
+
+export interface ChurchFeedItem {
+  id: string;
+  churchId: string;
+  authorId: string;
+  authorName: string;
+  authorAvatar?: string;
+  authorRole?: string;
+  authorBadge?: string; // e.g. 'Admin', 'Pastor'
+  contentType: FeedContentType;
+  title?: string;
+  content: string;
+  mediaUrls?: string[];
+  createdAt: string;
+  isPinned?: boolean;
+  projectProgress?: ProjectProgress;
+  eventDetails?: {
+    eventId?: string;
+    date: string;
+    time: string;
+    location: string;
+    bannerUrl?: string;
+  };
+  announcementDetails?: {
+    date: string;
+    time: string;
+    actionLabel?: string;
+  };
+  reactionSummary: ReactionCount[];
+  totalReactions: number;
+  userReaction?: ReactionType | null;
+  commentsCount: number;
+  sharesCount?: number;
+  commentsEnabled: boolean;
+  recentComments?: FeedComment[];
+}
+

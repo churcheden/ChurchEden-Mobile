@@ -13,7 +13,7 @@ import {
 import Svg, { Path } from 'react-native-svg';
 import { ShieldCheck, Users, Clock } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { CHURCH_EDEN_LOGO_SRC } from '../components/splash/SplashScreen';
+import { ChurchEdenLogo } from '../components/common/ChurchEdenLogo';
 
 function GoogleG({ size = 20 }: { size?: number }) {
   return (
@@ -95,12 +95,7 @@ export function WelcomeScreen() {
       >
         {/* Top branding */}
         <View style={styles.branding}>
-          <Image
-            source={CHURCH_EDEN_LOGO_SRC}
-            style={styles.logoImage}
-            resizeMode="contain"
-            fadeDuration={0}
-          />
+          <ChurchEdenLogo size={120} />
           <Text style={styles.wordmark}>ChurchEden</Text>
           <Text style={styles.tagline}>FAITH. PEOPLE. PURPOSE.</Text>
         </View>

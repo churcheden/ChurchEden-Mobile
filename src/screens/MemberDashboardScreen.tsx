@@ -8,6 +8,7 @@ import {
   Image,
   RefreshControl,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -27,6 +28,7 @@ import { EventCarousel } from '../components/member/EventCarousel';
 import { AnnouncementRow } from '../components/member/AnnouncementRow';
 import { ChurchEdenLogo } from '../components/common/ChurchEdenLogo';
 import { ProfileAvatar } from '../components/common/ProfileAvatar';
+import { SectionHeader } from '../components/common/SectionHeader';
 import Svg, { Circle } from 'react-native-svg';
 import {
   Bell,
@@ -214,8 +216,8 @@ export function MemberDashboardScreen() {
         {/* ===== Header row ===== */}
         <View style={styles.header}>
           <View style={styles.brandBlock}>
-            <ChurchEdenLogo size={34} />
-            <View>
+            <ChurchEdenLogo size={52} />
+            <View style={styles.brandTextGroup}>
               <Text style={styles.wordmark}>ChurchEden</Text>
               <Text style={styles.tagline}>FAITH. PEOPLE. PURPOSE.</Text>
             </View>
@@ -231,21 +233,21 @@ export function MemberDashboardScreen() {
               accessibilityRole="button"
               accessibilityLabel={hasUnread ? `Notifications, ${unreadCount} unread` : 'Notifications'}
             >
-              <Bell size={20} color={MemberTheme.textPrimary} strokeWidth={2} />
+              <Bell size={20} color="#07182F" strokeWidth={2} />
               {hasUnread && <View style={styles.unreadDot} />}
             </TouchableOpacity>
 
-            <ProfileAvatar size={40} />
+            <ProfileAvatar size={42} />
           </View>
         </View>
 
         {/* ===== Greeting ===== */}
         <View style={styles.greetingSection}>
-          <Text style={styles.greeting}>Welcome back,</Text>
-          <Text style={styles.headerName} numberOfLines={1}>
-            {displayName},
+          <Text style={styles.greetingTitle}>Welcome back,</Text>
+          <Text style={styles.greetingName} numberOfLines={1}>
+            {displayName}
           </Text>
-          <Text style={styles.headerSubtitle} numberOfLines={1}>
+          <Text style={styles.headerSubtitle} numberOfLines={2}>
             We&apos;re glad to have you with {church?.name || 'your church'}.
           </Text>
         </View>
@@ -365,18 +367,12 @@ export function MemberDashboardScreen() {
         </View>
 
         {/* ===== Upcoming events ===== */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Upcoming Events</Text>
-          <TouchableOpacity
-            style={styles.viewAllLink}
-            onPress={() => router.push('/events')}
-            accessibilityRole="button"
-            accessibilityLabel="View all events"
-          >
-            <Text style={styles.viewAllText}>View all</Text>
-            <ChevronRight size={16} color={MemberTheme.primary} />
-          </TouchableOpacity>
-        </View>
+        <SectionHeader
+          title="Upcoming Events"
+          actionLabel="View All"
+          onPress={() => router.push('/events')}
+          style={styles.sectionHeaderMargin}
+        />
 
         {eventsState === 'loading' ? (
           <View style={styles.sectionLoading}>
@@ -397,24 +393,24 @@ export function MemberDashboardScreen() {
             <Text style={styles.emptyStateText}>No upcoming events right now.</Text>
           </View>
         ) : (
-          <EventCarousel events={events} />
+          <EventCarousel
+            events={events}
+            onPressEvent={(evt) =>
+              router.push({
+                pathname: '/event-details',
+                params: { id: evt.id },
+              })
+            }
+          />
         )}
 
         {/* ===== Recent announcements ===== */}
-        <View style={[styles.sectionHeader, styles.announcementsHeader]}>
-          <Text style={styles.sectionTitle}>Recent Announcements</Text>
-          <TouchableOpacity
-            style={styles.viewAllLink}
-            onPress={() => {
-              // Opens the existing Announcements screen when available
-            }}
-            accessibilityRole="button"
-            accessibilityLabel="View all announcements"
-          >
-            <Text style={styles.viewAllText}>View all</Text>
-            <ChevronRight size={16} color={MemberTheme.primary} />
-          </TouchableOpacity>
-        </View>
+        <SectionHeader
+          title="Recent Announcements"
+          actionLabel="View All"
+          onPress={() => router.push('/announcements')}
+          style={styles.sectionHeaderMargin}
+        />
 
         {announcementsState === 'loading' ? (
           <View style={styles.announcementsLoading}>
@@ -443,9 +439,7 @@ export function MemberDashboardScreen() {
                 key={item.id}
                 announcement={item}
                 showTopBorder={index > 0}
-                onPress={() => {
-                  // Opens announcement details when available
-                }}
+                onPress={() => router.push('/announcements')}
               />
             ))}
           </View>
@@ -518,32 +512,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: 20,
+  },
+  brandBlock: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  brandTextGroup: {
+    justifyContent: 'center',
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  brandBlock: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
   wordmark: {
-    fontSize: 20,
+    fontSize: 25,
     fontWeight: '700',
-    color: MemberTheme.textPrimary,
-    fontFamily: 'Inter-Bold',
-    letterSpacing: -0.3,
+    color: '#07182F',
+    fontFamily: Platform.select({
+      ios: 'Georgia',
+      android: 'serif',
+      default: 'serif',
+    }),
+    letterSpacing: 0.1,
   },
   tagline: {
-    fontSize: 9,
-    color: MemberTheme.gold,
-    letterSpacing: 2,
-    fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    marginTop: 1,
+    fontSize: 10,
+    color: '#C98A16',
+    letterSpacing: 3,
+    fontWeight: '700',
+    fontFamily: Platform.select({
+      ios: 'Inter-Bold',
+      android: 'sans-serif-medium',
+      default: 'sans-serif',
+    }),
+    marginTop: 2,
   },
   iconButton: {
     width: 42,
@@ -573,26 +578,43 @@ const styles = StyleSheet.create({
     borderColor: MemberTheme.surface,
   },
   greetingSection: {
-    marginBottom: 20,
+    marginBottom: 22,
   },
-  greeting: {
-    fontSize: 14,
-    color: MemberTheme.textMuted,
-    fontFamily: 'Inter-Regular',
-  },
-  headerName: {
-    fontSize: 26,
+  greetingTitle: {
+    fontSize: 32,
     fontWeight: '700',
-    color: MemberTheme.textPrimary,
-    fontFamily: 'Inter-Bold',
-    marginTop: 2,
+    color: '#07182F',
+    fontFamily: Platform.select({
+      ios: 'Georgia',
+      android: 'serif',
+      default: 'serif',
+    }),
+    letterSpacing: -0.4,
+    lineHeight: 38,
+  },
+  greetingName: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#07182F',
+    fontFamily: Platform.select({
+      ios: 'Georgia',
+      android: 'serif',
+      default: 'serif',
+    }),
+    letterSpacing: -0.4,
+    lineHeight: 38,
+    marginTop: 0,
   },
   headerSubtitle: {
-    fontSize: 13,
-    color: MemberTheme.textSecondary,
-    lineHeight: 18,
-    marginTop: 8,
-    fontFamily: 'Inter-Regular',
+    fontSize: 15,
+    color: '#556578',
+    lineHeight: 22,
+    marginTop: 10,
+    fontFamily: Platform.select({
+      ios: 'Inter-Regular',
+      android: 'sans-serif',
+      default: 'sans-serif',
+    }),
   },
   churchCard: {
     flexDirection: 'row',
@@ -773,6 +795,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: MemberTheme.textPrimary,
     fontFamily: 'Inter-SemiBold',
+  },
+  sectionHeaderMargin: {
+    marginTop: 24,
+    marginBottom: 12,
   },
   sectionHeader: {
     flexDirection: 'row',

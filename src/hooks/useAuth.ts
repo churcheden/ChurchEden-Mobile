@@ -8,7 +8,7 @@ export function useAuth() {
     email: 'samuel@churcheden.app',
     role: 'Pastor',
     campus: 'Main Grace Cathedral',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
+    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop',
   });
   const [isLoading, setIsLoading] = useState(false);
 

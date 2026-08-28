@@ -7,20 +7,18 @@ import {
   SafeAreaView,
   Platform,
   Dimensions,
-  Image,
 } from 'react-native';
 import { router } from 'expo-router';
 
 import churchService from '../../services/churchService';
+import { ChurchEdenLogo, CHURCH_EDEN_LOGO_SRC } from '../common/ChurchEdenLogo';
 
-// Official ChurchEden logo (transparent PNG). Kept as the single source of
-// truth for branding across screens.
-export const CHURCH_EDEN_LOGO_SRC = require('../../assets/images/Just-logo-transparent.png');
+export { CHURCH_EDEN_LOGO_SRC };
 
 interface SplashScreenProps {
   /**
    * Optional custom callback when splash duration finishes.
-   * If omitted, defaults to navigating to `/find-church` (or `/pending-approval` if request active).
+   * If omitted, defaults to navigating to `/welcome` (or `/pending-approval` if request active).
    */
   onFinish?: () => void;
   /**
@@ -94,14 +92,9 @@ export function SplashScreen({ onFinish, durationMs = 3000 }: SplashScreenProps)
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.centeredWrapper}>
           <View style={styles.brandingGroup}>
-            {/* 1. ChurchEden Logo (fadeDuration 0 = instant, no decode cross-fade) */}
+            {/* 1. Official ChurchEden Logo */}
             <Animated.View style={{ opacity: logoOpacity }}>
-              <Image
-                source={CHURCH_EDEN_LOGO_SRC}
-                style={styles.logoImage}
-                resizeMode="contain"
-                fadeDuration={0}
-              />
+              <ChurchEdenLogo size={150} />
             </Animated.View>
 
             {/* 2. ChurchEden Wordmark */}
@@ -131,16 +124,11 @@ const styles = StyleSheet.create({
   centeredWrapper: {
     flex: 1,
     alignItems: 'center',
-    // Position branding group slightly above exact vertical center (~45% screen height)
     paddingTop: SCREEN_HEIGHT * 0.28,
   },
   brandingGroup: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  logoImage: {
-    width: 150,
-    height: 150,
   },
   wordmarkContainer: {
     marginTop: 24,
@@ -170,7 +158,7 @@ const styles = StyleSheet.create({
     }),
     fontWeight: '600',
     textAlign: 'center',
-    letterSpacing: 5, // Uppercase letter spacing
+    letterSpacing: 5,
   },
 });
 

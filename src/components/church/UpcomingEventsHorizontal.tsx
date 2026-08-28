@@ -11,7 +11,8 @@ import {
 import { useRouter } from 'expo-router';
 import { ChurchEvent } from '../../types';
 import { MemberTheme } from '../../constants/memberTheme';
-import { ChevronRight, Clock, MapPin } from 'lucide-react-native';
+import { SectionHeader } from '../common/SectionHeader';
+import { Clock, MapPin } from 'lucide-react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = Math.min(SCREEN_WIDTH * 0.72, 280);
@@ -40,7 +41,7 @@ function formatEventTime(dateStr: string): string {
 
 export function UpcomingEventsHorizontal({
   events,
-  title = 'Upcoming at Your Church',
+  title = 'Upcoming Events',
   onSeeAll,
 }: UpcomingEventsHorizontalProps) {
   const router = useRouter();
@@ -59,18 +60,12 @@ export function UpcomingEventsHorizontal({
 
   return (
     <View style={styles.container}>
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>{title}</Text>
-        <TouchableOpacity
-          style={styles.seeAllButton}
+      <View style={styles.headerWrapper}>
+        <SectionHeader
+          title={title}
+          actionLabel="View All"
           onPress={handleSeeAll}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel="See all upcoming events"
-        >
-          <Text style={styles.seeAllText}>See all</Text>
-          <ChevronRight size={15} color={MemberTheme.primary} />
-        </TouchableOpacity>
+        />
       </View>
 
       <ScrollView
@@ -89,11 +84,16 @@ export function UpcomingEventsHorizontal({
               key={event.id}
               style={[styles.eventCard, { width: CARD_WIDTH }]}
               activeOpacity={0.85}
-              onPress={() => router.push('/events')}
+              onPress={() =>
+                router.push({
+                  pathname: '/event-details',
+                  params: { id: event.id },
+                })
+              }
               accessibilityRole="button"
               accessibilityLabel={`${event.title}, on ${month} ${day}`}
             >
-              {/* Event Image with overlay date badge */}
+              {/* Event Image with overlay green date badge */}
               <View style={styles.imageContainer}>
                 {event.bannerImageUrl ? (
                   <Image
@@ -105,6 +105,7 @@ export function UpcomingEventsHorizontal({
                   <View style={styles.imagePlaceholder} />
                 )}
 
+                {/* Green ChurchEden Date Badge */}
                 <View style={styles.dateBadge}>
                   <Text style={styles.dateMonth}>{month}</Text>
                   <Text style={styles.dateDay}>{day}</Text>
@@ -143,29 +144,8 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: 20,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  headerWrapper: {
     paddingHorizontal: 20,
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: MemberTheme.textPrimary,
-    fontFamily: 'Inter-Bold',
-  },
-  seeAllButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-  },
-  seeAllText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: MemberTheme.primary,
-    fontFamily: 'Inter-SemiBold',
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -198,15 +178,17 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: '#10233F',
   },
+  // Green ChurchEden date badge treatment
   dateBadge: {
     position: 'absolute',
     top: 10,
     left: 10,
-    backgroundColor: MemberTheme.surface,
+    backgroundColor: MemberTheme.primary, // ChurchEden Green #3F7A3A
     borderRadius: 10,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
     alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
@@ -216,14 +198,14 @@ const styles = StyleSheet.create({
   dateMonth: {
     fontSize: 9.5,
     fontWeight: '800',
-    color: '#D14343',
+    color: MemberTheme.textOnDark, // White
     fontFamily: 'Inter-Bold',
     letterSpacing: 0.5,
   },
   dateDay: {
     fontSize: 14,
     fontWeight: '800',
-    color: MemberTheme.textPrimary,
+    color: MemberTheme.textOnDark, // White
     fontFamily: 'Inter-Bold',
   },
   infoContainer: {

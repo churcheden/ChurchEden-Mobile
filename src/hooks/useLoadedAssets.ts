@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { Asset } from 'expo-asset';
-
-const LOGO_ASSET = require('../assets/images/Just-logo-transparent.png');
+import { CHURCH_EDEN_LOGO_SRC } from '../components/common/ChurchEdenLogo';
 
 // Prevent auto hiding splash screen until assets are loaded
 SplashScreen.preventAutoHideAsync().catch(() => {
@@ -16,14 +15,14 @@ export function useLoadedAssets() {
   useEffect(() => {
     async function loadResourcesAndDataAsync() {
       try {
-        // Preload custom brand fonts and critical logo image asset in parallel
+        // Preload custom brand fonts and critical official logo image asset in parallel
         await Promise.all([
           Font.loadAsync({
             'Inter-Regular': require('../assets/fonts/Inter-Regular.ttf'),
             'Inter-SemiBold': require('../assets/fonts/Inter-SemiBold.ttf'),
             'Inter-Bold': require('../assets/fonts/Inter-Bold.ttf'),
           }),
-          Asset.fromModule(LOGO_ASSET).downloadAsync(),
+          Asset.fromModule(CHURCH_EDEN_LOGO_SRC).downloadAsync(),
         ]);
       } catch (e) {
         // Fallback gracefully if fonts/assets fail to load locally

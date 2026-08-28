@@ -32,7 +32,7 @@ const MOCK_MEMBER: Member = {
   phone: '+233 20 000 0000',
   role: 'member',
   campus: 'Ridge, Accra',
-  profileImageUrl: '',
+  profileImageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop',
   membershipDate: '2025-05-10T00:00:00.000Z',
   status: 'active',
 };

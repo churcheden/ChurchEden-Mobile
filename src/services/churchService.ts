@@ -10,7 +10,7 @@ const MOCK_CHURCHES: Church[] = [
     region: 'Greater Accra',
     country: 'Ghana',
     address: '14 Independence Avenue, Ridge, Accra',
-    imageUrl: 'https://images.unsplash.com/photo-1548625361-195fe57876a3?q=80&w=1200&auto=format&fit=crop',
+    imageUrl: 'https://images.unsplash.com/photo-1508963493744-76fce69379c0?q=80&w=1200&auto=format&fit=crop',
     iconType: 'church',
     iconBgColor: '#07182F', // Deep Navy
     isRegistered: true,
@@ -102,7 +102,7 @@ const MOCK_CHURCHES: Church[] = [
     region: 'Greater Accra',
     country: 'Ghana',
     address: 'Old Achimota Station Rd, Achimota, Accra',
-    imageUrl: 'https://images.unsplash.com/photo-1543702404-585802166668?q=80&w=1200&auto=format&fit=crop',
+    imageUrl: 'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?q=80&w=1200&auto=format&fit=crop',
     iconType: 'mountain',
     iconBgColor: '#4C1D95', // Deep Purple
     isRegistered: true,

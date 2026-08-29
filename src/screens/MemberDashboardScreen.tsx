@@ -40,7 +40,7 @@ import {
 } from 'lucide-react-native';
 
 const DEFAULT_CHURCH_IMAGE =
-  'https://images.unsplash.com/photo-1548625361-195fe57876a3?q=80&w=1200&auto=format&fit=crop';
+  'https://images.unsplash.com/photo-1508963493744-76fce69379c0?q=80&w=1200&auto=format&fit=crop';
 
 function formatFullDate(dateStr: string): string {
   const d = new Date(dateStr);
@@ -77,6 +77,7 @@ export function MemberDashboardScreen() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 
   const [refreshing, setRefreshing] = useState(false);
+  const [churchImageError, setChurchImageError] = useState(false);
 
   const loadCore = useCallback(async () => {
     setCoreLoading(true);
@@ -90,6 +91,7 @@ export function MemberDashboardScreen() {
       ]);
       setMember(memberRes.success ? memberRes.data : null);
       setChurch(churchRes.success ? churchRes.data : null);
+      setChurchImageError(false);
       setNextService(nextServiceRes.success ? nextServiceRes.data : null);
       setUnreadCount(notificationsRes.success ? notificationsRes.data.unreadCount : 0);
       if (!memberRes.success && !churchRes.success) {
@@ -262,9 +264,14 @@ export function MemberDashboardScreen() {
           accessibilityHint="Opens your church profile"
         >
           <Image
-            source={{ uri: church?.imageUrl || DEFAULT_CHURCH_IMAGE }}
+            source={{
+              uri: churchImageError
+                ? DEFAULT_CHURCH_IMAGE
+                : church?.imageUrl || DEFAULT_CHURCH_IMAGE,
+            }}
             style={styles.churchImage}
             resizeMode="cover"
+            onError={() => setChurchImageError(true)}
           />
           <View style={styles.churchInfo}>
             <Text style={styles.churchLabel}>Your Church</Text>

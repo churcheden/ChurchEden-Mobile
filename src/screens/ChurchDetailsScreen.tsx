@@ -185,7 +185,7 @@ export function ChurchDetailsScreen() {
         {/* Church Hero Image with Registered Badge */}
         <View style={styles.imageCardContainer}>
           <Image
-            source={{ uri: church.imageUrl || 'https://images.unsplash.com/photo-1548625361-195fe57876a3?q=80&w=1200&auto=format&fit=crop' }}
+            source={{ uri: church.imageUrl || 'https://images.unsplash.com/photo-1508963493744-76fce69379c0?q=80&w=1200&auto=format&fit=crop' }}
             style={styles.heroImage}
             resizeMode="cover"
             accessibilityLabel={`${church.name} exterior photograph`}

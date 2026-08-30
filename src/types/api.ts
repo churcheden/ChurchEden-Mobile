@@ -124,6 +124,17 @@ export interface ChurchOnboardingDraft {
   }>;
 }
 
+// Church request form schema
+export interface ChurchRequestForm {
+  churchName: string;
+  city: string;
+  leaderName: string;
+  phoneContact: string;
+  email: string;
+}
+
+export type ChurchRequestFormValues = ChurchRequestForm;
+
 export interface ClientError {
   status: 'error';
   code: string;

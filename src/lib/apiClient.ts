@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getItemAsync, setItemAsync, deleteItemAsync } from "expo-secure-store";
 import { Config } from "../constants/Config";
 import type { ApiErrorShape, ClientError } from "../types/api";
 
@@ -39,24 +39,24 @@ function withRefreshMutex(fn: () => Promise<void>): Promise<void> {
 
 export async function getTokens() {
   const [accessToken, refreshToken] = await Promise.all([
-    AsyncStorage.getItem(AUTH_ACCESS_TOKEN_KEY),
-    AsyncStorage.getItem(AUTH_REFRESH_TOKEN_KEY),
+    getItemAsync(AUTH_ACCESS_TOKEN_KEY),
+    getItemAsync(AUTH_REFRESH_TOKEN_KEY),
   ]);
-  return { accessToken, refreshToken };
+  return { accessToken: accessToken ?? null, refreshToken: refreshToken ?? null };
 }
 
 export async function saveTokens(accessToken: string, refreshToken?: string) {
-  const ops: Promise<void>[] = [AsyncStorage.setItem(AUTH_ACCESS_TOKEN_KEY, accessToken)];
+  const ops: Promise<void>[] = [setItemAsync(AUTH_ACCESS_TOKEN_KEY, accessToken)];
   if (refreshToken) {
-    ops.push(AsyncStorage.setItem(AUTH_REFRESH_TOKEN_KEY, refreshToken));
+    ops.push(setItemAsync(AUTH_REFRESH_TOKEN_KEY, refreshToken));
   }
   await Promise.all(ops);
 }
 
 export async function clearTokens() {
   await Promise.all([
-    AsyncStorage.removeItem(AUTH_ACCESS_TOKEN_KEY),
-    AsyncStorage.removeItem(AUTH_REFRESH_TOKEN_KEY),
+    deleteItemAsync(AUTH_ACCESS_TOKEN_KEY),
+    deleteItemAsync(AUTH_REFRESH_TOKEN_KEY),
   ]);
 }
 

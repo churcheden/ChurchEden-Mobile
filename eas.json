@@ -11,7 +11,11 @@
         "EXPO_PUBLIC_ENV": "development",
         "EXPO_PUBLIC_API_URL": "https://dev-api.churcheden.app/v1",
         "EXPO_PUBLIC_BUNDLE_ID": "com.churcheden.app.dev",
-        "EXPO_PUBLIC_PACKAGE_NAME": "com.churcheden.app.dev"
+        "EXPO_PUBLIC_PACKAGE_NAME": "com.churcheden.app.dev",
+        "EXPO_PUBLIC_ENABLE_QR_SCANNER": "true",
+        "EXPO_PUBLIC_ENABLE_LIVE_STREAM": "true",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "90912166819-hvpfd8k6enep3ffbgn2k4htb7plmvatk.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "90912166819-h75pon7im4p8p2mejc57csl9ln240rn9.apps.googleusercontent.com"
       },
       "ios": {
         "simulator": true
@@ -23,7 +27,11 @@
         "EXPO_PUBLIC_ENV": "staging",
         "EXPO_PUBLIC_API_URL": "https://staging-api.churcheden.app/v1",
         "EXPO_PUBLIC_BUNDLE_ID": "com.churcheden.app.staging",
-        "EXPO_PUBLIC_PACKAGE_NAME": "com.churcheden.app.staging"
+        "EXPO_PUBLIC_PACKAGE_NAME": "com.churcheden.app.staging",
+        "EXPO_PUBLIC_ENABLE_QR_SCANNER": "true",
+        "EXPO_PUBLIC_ENABLE_LIVE_STREAM": "true",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "90912166819-hvpfd8k6enep3ffbgn2k4htb7plmvatk.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "90912166819-h75pon7im4p8p2mejc57csl9ln240rn9.apps.googleusercontent.com"
       },
       "android": {
         "buildType": "apk"
@@ -35,7 +43,11 @@
         "EXPO_PUBLIC_ENV": "production",
         "EXPO_PUBLIC_API_URL": "https://api.churcheden.app/v1",
         "EXPO_PUBLIC_BUNDLE_ID": "com.churcheden.app",
-        "EXPO_PUBLIC_PACKAGE_NAME": "com.churcheden.app"
+        "EXPO_PUBLIC_PACKAGE_NAME": "com.churcheden.app",
+        "EXPO_PUBLIC_ENABLE_QR_SCANNER": "true",
+        "EXPO_PUBLIC_ENABLE_LIVE_STREAM": "true",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "90912166819-hvpfd8k6enep3ffbgn2k4htb7plmvatk.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "90912166819-h75pon7im4p8p2mejc57csl9ln240rn9.apps.googleusercontent.com"
       },
       "ios": {
         "image": "latest"

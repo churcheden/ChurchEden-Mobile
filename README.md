@@ -76,6 +76,14 @@ EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_xxxxxxxxxxxxxxxx
 EXPO_PUBLIC_FLUTTERWAVE_PUBLIC_KEY=FLWPUBK_TEST-xxxxxxxx
 EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_51XXXXXXXXXXXX
 EXPO_PUBLIC_MOMO_PRIMARY_KEY=xxxxxxxxxxxxxxxxxxxxxxxx
+
+# Feature Flags
+EXPO_PUBLIC_ENABLE_QR_SCANNER=true
+EXPO_PUBLIC_ENABLE_LIVE_STREAM=true
+
+# Google OAuth
+EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=your_android_client_id.apps.googleusercontent.com
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=your_ios_client_id.apps.googleusercontent.com
 ```
 
 ---

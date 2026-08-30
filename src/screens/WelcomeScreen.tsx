@@ -133,7 +133,7 @@ export function WelcomeScreen() {
 
     try {
       // Step 1: Get the Google OAuth URL from the backend
-      const { url: oauthUrl } = await apiClient.get<{ url: string }>('/auth/google/url');
+      const { url: oauthUrl } = await apiClient.get<{ url: string }>('/google/url');
 
       if (!oauthUrl) {
         setGoogleAuthError('Could not retrieve Google OAuth URL');

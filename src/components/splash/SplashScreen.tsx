@@ -71,7 +71,9 @@ export function SplashScreen({ onFinish, durationMs = 3000 }: SplashScreenProps)
         onFinish();
       } else {
         const activeRequest = churchService.getActiveJoinRequest();
-        if (activeRequest && activeRequest.status === 'pending') {
+        if (activeRequest && activeRequest.status === 'rejected') {
+          router.replace('/request-rejected');
+        } else if (activeRequest && activeRequest.status === 'pending') {
           router.replace('/pending-approval');
         } else {
           router.replace('/welcome');

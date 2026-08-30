@@ -98,6 +98,7 @@ export interface ChurchJoinRequest {
   status: 'pending' | 'approved' | 'rejected';
   submittedAt: string;
   estimatedApprovalTime?: string;
+  rejectionReason?: string;
 }
 
 export interface ApiResponse<T> {

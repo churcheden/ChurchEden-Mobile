@@ -217,7 +217,9 @@ class ChurchService {
   }
 
   /**
-   * Request to join a specific church
+   * Request to join a specific church.
+   * If the member previously had a REJECTED request for this church, the row is
+   * reset to PENDING so they can re-apply without losing their membership record.
    */
   async requestToJoinChurch(churchId: string): Promise<ApiResponse<ChurchJoinRequest>> {
     await new Promise((res) => setTimeout(res, 800));
@@ -228,6 +230,38 @@ class ChurchService {
         success: false,
         data: null as unknown as ChurchJoinRequest,
         error: 'Cannot submit request: church was not found.',
+      };
+    }
+
+    // Re-request: reuse the existing membership row instead of duplicating it.
+    if (this.activeJoinRequest && this.activeJoinRequest.churchId === churchId) {
+      if (this.activeJoinRequest.status === 'pending') {
+        return {
+          success: true,
+          data: this.activeJoinRequest,
+          message: 'You already have a pending request to join this church.',
+        };
+      }
+      if (this.activeJoinRequest.status === 'approved') {
+        return {
+          success: true,
+          data: this.activeJoinRequest,
+          message: 'You are already a member of this church.',
+        };
+      }
+
+      // REJECTED → the member is re-applying.
+      const renewedRequest: ChurchJoinRequest = {
+        ...this.activeJoinRequest,
+        status: 'pending',
+        rejectionReason: undefined,
+        submittedAt: new Date().toISOString(),
+      };
+      this.activeJoinRequest = renewedRequest;
+      return {
+        success: true,
+        data: renewedRequest,
+        message: 'Your join request was submitted again.',
       };
     }
 
@@ -247,6 +281,31 @@ class ChurchService {
       success: true,
       data: newRequest,
       message: 'Join request successfully submitted to church administrators.',
+    };
+  }
+
+  /**
+   * Check the current status of the member's join request.
+   * Mock — simulates a network round-trip. In production this will hit
+   * GET /api/v1/join-requests (or the user's membership list) on the backend.
+   */
+  async checkJoinRequestStatus(): Promise<ChurchJoinRequest | null> {
+    await new Promise((res) => setTimeout(res, 700));
+    return this.activeJoinRequest;
+  }
+
+  /**
+   * MOCK ONLY — simulates the church admin's decision so the mobile flows
+   * (approved → dashboard, rejected → Request Rejected screen) can be tested
+   * before the backend is wired in. In production the status is set by the
+   * admin via the web Join Requests page.
+   */
+  simulateAdminDecision(status: 'approved' | 'rejected' | 'pending', rejectionReason?: string): void {
+    if (!this.activeJoinRequest) return;
+    this.activeJoinRequest = {
+      ...this.activeJoinRequest,
+      status,
+      rejectionReason: status === 'rejected' ? rejectionReason : undefined,
     };
   }
 

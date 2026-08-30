@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,48 +7,96 @@ import {
   TouchableOpacity,
   Platform,
   StatusBar,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
 import {
   Clock,
   CheckCircle2,
-  Building2,
   ChevronRight,
   RefreshCw,
   ArrowLeft,
   ShieldCheck,
+  LogOut,
 } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import churchService from '../services/churchService';
+import { ChurchIconBadge } from '../components/church/ChurchIconBadge';
+import type { Church } from '../types';
 
 export function PendingApprovalScreen() {
   const params = useLocalSearchParams<{ churchId?: string }>();
   const activeRequest = churchService.getActiveJoinRequest();
-  const churchName = activeRequest?.churchName || 'Grace Community Church';
-  const estimatedTime = activeRequest?.estimatedApprovalTime || '1–3 business days';
+  const [church, setChurch] = useState<Church | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [stillWaiting, setStillWaiting] = useState(false);
 
-  // TEMPORARY DEMO BEHAVIOR (backend not active yet):
-  // Simulate approval shortly after the request is sent, dropping the member
-  // straight into their dashboard. Remove once real approval flows are live.
+  const churchName = activeRequest?.churchName || church?.name || 'Grace Community Church';
+  const estimatedTime =
+    activeRequest?.estimatedApprovalTime || church?.estimatedApprovalTime || '1–3 business days';
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      router.replace('/(tabs)');
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, []);
+    let mounted = true;
+    const churchId = params.churchId || activeRequest?.churchId || '';
+    if (!churchId) return;
+    (async () => {
+      const response = await churchService.getChurchById(churchId);
+      if (mounted && response.success) setChurch(response.data);
+    })();
+    return () => {
+      mounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.churchId]);
+
+  const handleCheckStatus = async () => {
+    setChecking(true);
+    setStillWaiting(false);
+    try {
+      const request = await churchService.checkJoinRequestStatus();
+      if (!request) {
+        router.replace('/find-church');
+        return;
+      }
+      if (request.status === 'approved') {
+        churchService.clearActiveJoinRequest();
+        router.replace('/(tabs)');
+        return;
+      }
+      if (request.status === 'rejected') {
+        router.replace('/request-rejected');
+        return;
+      }
+      setStillWaiting(true);
+    } catch {
+      setStillWaiting(true);
+    } finally {
+      setChecking(false);
+    }
+  };
 
   const handleChangeRequest = () => {
     churchService.clearActiveJoinRequest();
     router.replace('/find-church');
   };
 
+  const handleSignOut = () => {
+    churchService.clearActiveJoinRequest();
+    router.replace('/welcome');
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#F5F0E8" />
       <View style={styles.container}>
-        {/* Top Emblem */}
-        <View style={styles.iconCircle}>
-          <ShieldCheck size={38} color="#C98A16" strokeWidth={2} />
-        </View>
+        {/* Church Logo / Icon (fallback) */}
+        {church?.imageUrl ? (
+          <View style={styles.iconCircle}>
+            <Image source={{ uri: church.imageUrl }} style={styles.churchLogo} resizeMode="cover" />
+          </View>
+        ) : (
+          <ChurchIconBadge type={church?.iconType} bgColor={church?.iconBgColor ?? '#07182F'} size={80} />
+        )}
 
         {/* Headings */}
         <Text style={styles.title}>Request sent.</Text>
@@ -72,7 +120,7 @@ export function PendingApprovalScreen() {
           <View style={styles.divider} />
 
           <View style={styles.infoRow}>
-            <Building2 size={16} color="#647082" />
+            <ShieldCheck size={16} color="#647082" />
             <Text style={styles.infoRowText}>{churchName}</Text>
           </View>
 
@@ -90,10 +138,39 @@ export function PendingApprovalScreen() {
           </Text>
         </View>
 
+        {/* "Still waiting" feedback (non-error) */}
+        {stillWaiting && (
+          <View style={styles.checkNotice}>
+            <Clock size={16} color="#B45309" strokeWidth={2.4} />
+            <Text style={styles.checkNoticeText}>
+              Still waiting for approval — we’ll notify you here as soon as your request is reviewed.
+            </Text>
+          </View>
+        )}
+
         <View style={{ flex: 1 }} />
 
         {/* Bottom Actions */}
         <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.primaryButton, checking && styles.primaryButtonDisabled]}
+            onPress={handleCheckStatus}
+            activeOpacity={0.85}
+            disabled={checking}
+            accessibilityRole="button"
+            accessibilityLabel="Check Approval Status"
+          >
+            {checking ? (
+              <ActivityIndicator size="small" color="#07182F" />
+            ) : (
+              <RefreshCw size={18} color="#07182F" strokeWidth={2.5} />
+            )}
+            <Text style={styles.primaryButtonText}>
+              {checking ? 'Checking status...' : 'Check Approval Status'}
+            </Text>
+            {!checking && <ChevronRight size={18} color="#07182F" strokeWidth={2.5} />}
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={styles.changeButton}
             onPress={handleChangeRequest}
@@ -101,6 +178,11 @@ export function PendingApprovalScreen() {
           >
             <ArrowLeft size={16} color="#647082" />
             <Text style={styles.changeButtonText}>Select a Different Church</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut} activeOpacity={0.7}>
+            <LogOut size={14} color="#8A95A5" strokeWidth={2.4} />
+            <Text style={styles.signOutButtonText}>Sign Out</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -130,11 +212,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
+    overflow: 'hidden',
     shadowColor: '#C98A16',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 10,
     elevation: 3,
+  },
+  churchLogo: {
+    width: '100%',
+    height: '100%',
   },
   title: {
     fontSize: 32,
@@ -243,9 +330,54 @@ const styles = StyleSheet.create({
     color: '#166534',
     lineHeight: 18,
   },
+  checkNotice: {
+    backgroundColor: '#FEF3C7',
+    borderRadius: 16,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    width: '100%',
+    marginTop: 12,
+  },
+  checkNoticeText: {
+    flex: 1,
+    fontSize: 12.5,
+    color: '#92400E',
+    lineHeight: 18,
+  },
   buttonContainer: {
     width: '100%',
     gap: 12,
+  },
+  primaryButton: {
+    height: 54,
+    borderRadius: 16,
+    backgroundColor: '#C98A16', // ChurchEden Gold
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    shadowColor: '#C98A16',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  primaryButtonDisabled: {
+    opacity: 0.7,
+  },
+  primaryButtonText: {
+    color: '#07182F', // Deep Navy text for crisp contrast on gold
+    fontSize: 16,
+    fontWeight: '700',
+    fontFamily: Platform.select({
+      ios: 'Inter-Bold',
+      android: 'sans-serif-medium',
+      default: 'sans-serif',
+    }),
   },
   changeButton: {
     height: 50,
@@ -261,6 +393,19 @@ const styles = StyleSheet.create({
   changeButtonText: {
     color: '#475569',
     fontSize: 14.5,
+    fontWeight: '600',
+  },
+  signOutButton: {
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+  },
+  signOutButtonText: {
+    color: '#8A95A5',
+    fontSize: 13.5,
     fontWeight: '600',
   },
 });

@@ -1,3 +1,4 @@
+import profileService from '../services/profileService';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
@@ -188,12 +189,29 @@ export function CompleteProfileScreen() {
     }
     setIsSubmitting(true);
     try {
+      // 1. Submit complete profile to backend
+      const profileRes = await profileService.submitCompleteProfile({
+        fullName: form.fullName,
+        dateOfBirth: form.dateOfBirth,
+        gender: form.gender,
+        phoneNumber: form.phone,
+        contactEmail: form.email,
+        city: form.city,
+        address: form.fullAddress || form.city,
+        maritalStatus: form.maritalStatus,
+        occupation: form.occupation,
+        photoUri: form.photoUri,
+      });
+
+      if (!profileRes.success && profileRes.error?.includes('already')) {
+        // Continue if profile was already created
+      }
+
+      // 2. Submit join request to backend
       const response = await churchService.requestToJoinChurch(churchId);
       if (response.success) {
         await saveProfileDraft(churchId, { ...form, churchId });
-        // Persist selected church so the dashboard always shows the right church.
         await setSelectedChurchId(churchId);
-        // Keep the recorded profile; clear the draft once the request is sent.
         router.replace({
           pathname: '/pending-approval',
           params: { churchId },

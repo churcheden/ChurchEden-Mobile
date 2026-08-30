@@ -1,6 +1,6 @@
 import { Config } from '../constants/Config';
 import { Donation, ApiResponse } from '../types';
-import api from './api';
+import { apiClient } from '../lib/apiClient';
 
 export interface PaymentInitializationParams {
   amount: number;
@@ -29,18 +29,28 @@ export const PaymentService = {
   },
 
   async initializeTransaction(params: PaymentInitializationParams): Promise<ApiResponse<{ authorizationUrl?: string; reference: string }>> {
-    return api.post('/donations/initialize', {
-      ...params,
-      publicKey: this.getGatewayPublicKey(params.gateway)
-    });
+    try {
+      const data = await apiClient.post<{ authorizationUrl?: string; reference: string }>('/donations/initialize', {
+        ...params,
+        publicKey: this.getGatewayPublicKey(params.gateway),
+      });
+      return { success: true, data: (data as any)?.data ?? data };
+    } catch (err: any) {
+      return { success: false, data: null as any, error: err.message || 'Initialization failed' };
+    }
   },
 
   async verifyTransaction(reference: string, gateway: Donation['paymentGateway']): Promise<ApiResponse<Donation>> {
-    return api.post<Donation>('/donations/verify', {
-      reference,
-      gateway
-    });
-  }
+    try {
+      const data = await apiClient.post<Donation>('/donations/verify', {
+        reference,
+        gateway,
+      });
+      return { success: true, data: (data as any)?.data ?? data };
+    } catch (err: any) {
+      return { success: false, data: null as any, error: err.message || 'Verification failed' };
+    }
+  },
 };
 
 export default PaymentService;

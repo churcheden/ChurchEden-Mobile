@@ -1,5 +1,5 @@
-// ChurchEden Unified API & Domain Types
-// Generated from prisma/schema.prisma & backend routes
+// src/types/api.ts
+// Derived from prisma/schema.prisma & backend routes
 
 export type LoginProvider = 'EMAIL' | 'GOOGLE';
 export type Gender = 'MALE' | 'FEMALE' | 'PREFER_NOT_TO_SAY';
@@ -14,28 +14,80 @@ export type CongregationSize =
   | 'RANGE_1001_2000'
   | 'RANGE_2000_PLUS';
 export type ChurchLanguage = 'ENGLISH' | 'FRENCH' | 'SPANISH';
+export type MinistryType = 'MINISTRY' | 'DEPARTMENT';
+
+export interface ApiResponse<T> {
+  status: 'success';
+  data: T;
+}
+
+export interface ClientErrorResponse {
+  status: 'error';
+  code: string;
+  message: string;
+  details?: Record<string, string[]>;
+}
+
+export interface ServerErrorResponse {
+  status: 'fail';
+  error: string;
+  message?: string;
+}
+
+export type ClientError = ClientErrorResponse;
+export type ServerError = ServerErrorResponse;
+export type ApiErrorShape = ClientErrorResponse | ServerErrorResponse;
 
 export interface User {
   id: string;
   email: string;
-  fullName: string | null;
+  fullName?: string | null;
+  role?: ChurchRole | string;
   googleId?: string | null;
   loginProvider: LoginProvider;
   isVerified: boolean;
-  isPremium: boolean;
+  isPremium?: boolean;
   premiumSince?: string | null;
   premiumExpiry?: string | null;
   subscriptionProcessor?: string | null;
   subscriptionRef?: string | null;
   subscriptionStatus?: SubscriptionStatus | null;
+  avatarUrl?: string | null;
+  campus?: string | null;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
+}
+
+export interface ServiceTime {
+  id?: string;
+  churchId?: string;
+  label: string;
+  dayOfWeek: number; // 0 (Sunday) to 6 (Saturday)
+  time: string; // "HH:MM"
+  createdAt?: string;
+}
+
+export interface CustomMinistry {
+  name: string;
+  type: MinistryType;
+  description?: string;
+  icon?: string;
+}
+
+export interface ChurchMinistry {
+  id: string;
+  churchId: string;
+  name: string;
+  type: 'MINISTRY' | 'DEPARTMENT';
+  description?: string | null;
+  icon?: string | null;
+  isCustom: boolean;
+  isActive: boolean;
 }
 
 export interface MemberProfile {
   id: string;
-  userId: string;
-  profilePhotoUrl?: string | null;
+  userId?: string;
   fullName: string;
   dateOfBirth: string;
   gender: Gender;
@@ -45,8 +97,9 @@ export interface MemberProfile {
   address: string;
   maritalStatus: MaritalStatus;
   occupation?: string | null;
-  completedAt: string;
-  updatedAt: string;
+  profilePhotoUrl?: string | null;
+  completedAt?: string;
+  updatedAt?: string;
 }
 
 export interface Church {
@@ -67,37 +120,43 @@ export interface Church {
   updatedAt: string;
 }
 
-export interface ServiceTime {
+export interface Membership {
   id: string;
   churchId: string;
-  label: string;
-  dayOfWeek: number;
-  time: string;
-  createdAt: string;
-}
-
-export interface ChurchMinistry {
-  id: string;
-  churchId: string;
-  name: string;
-  type: 'MINISTRY' | 'DEPARTMENT';
-  description?: string | null;
-  icon?: string | null;
-  isCustom: boolean;
-  isActive: boolean;
-}
-
-export interface ChurchMembership {
-  id: string;
   userId: string;
-  churchId: string;
-  role: ChurchRole;
   status: MembershipStatus;
+  role: ChurchRole;
   rejectionReason?: string | null;
-  joinedAt: string;
+  isBanned?: boolean;
+  bannedAt?: string | null;
+  banReason?: string | null;
+  joinedAt?: string;
   church?: Church;
   user?: User;
 }
+
+export type ChurchMembership = Membership;
+
+export interface ChurchRequest {
+  id: string;
+  churchName: string;
+  city: string;
+  leaderName: string;
+  phoneContact?: string | null;
+  emailContact?: string | null;
+  requestedById?: string;
+  createdAt?: string;
+}
+
+export type ChurchRequestForm = {
+  churchName: string;
+  city: string;
+  leaderName: string;
+  phoneContact?: string;
+  emailContact?: string;
+};
+
+export type ChurchRequestFormValues = ChurchRequestForm;
 
 export interface ChurchOnboardingDraft {
   firstName?: string;
@@ -116,46 +175,20 @@ export interface ChurchOnboardingDraft {
   serviceTimes?: Array<{ label: string; dayOfWeek: number; time: string }>;
   logoUrl?: string;
   ministryIds?: string[];
-  customMinistries?: Array<{
-    name: string;
-    type: 'MINISTRY' | 'DEPARTMENT';
-    description?: string;
-    icon?: string;
-  }>;
+  customMinistries?: CustomMinistry[];
 }
-
-// Church request form schema
-export interface ChurchRequestForm {
-  churchName: string;
-  city: string;
-  leaderName: string;
-  phoneContact: string;
-  email: string;
-}
-
-export type ChurchRequestFormValues = ChurchRequestForm;
-
-export interface ClientError {
-  status: 'error';
-  code: string;
-  message: string;
-  details?: Record<string, string[]>;
-}
-
-export interface ServerError {
-  status: 'fail';
-  error: string;
-  message?: string;
-}
-
-export type ApiErrorShape = ClientError | ServerError;
 
 export interface AuthSuccessResponse {
   status: 'success';
-  message: string;
-  accessToken: string;
+  message?: string;
+  accessToken?: string;
   refreshToken?: string;
-  user: Pick<User, 'id' | 'email' | 'fullName' | 'isVerified' | 'loginProvider'>;
+  data?: {
+    accessToken?: string;
+    refreshToken?: string;
+    user?: User;
+  };
+  user?: User;
 }
 
 export interface TokenRefreshResponse {

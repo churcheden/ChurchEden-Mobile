@@ -163,7 +163,7 @@ class ChurchService {
           churchName: latest.church?.name || 'Your Church',
           churchLocation: latest.church?.city || '',
           status: (latest.status?.toLowerCase() as 'pending' | 'approved' | 'rejected') || 'pending',
-          submittedAt: latest.joinedAt,
+          submittedAt: latest.joinedAt || new Date().toISOString(),
           rejectionReason: latest.rejectionReason || undefined,
         };
       }

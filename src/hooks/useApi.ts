@@ -20,7 +20,7 @@ export function useCurrentUser() {
       setData(res);
       setError(null);
     } catch (err) {
-      setError(err instanceof AppError ? err : new AppError((err as Error).message));
+      setError(err instanceof AppError ? err : new AppError("UNKNOWN_ERROR", (err as Error).message));
     } finally {
       setIsLoading(false);
     }
@@ -45,7 +45,7 @@ export function useOnboardingDraft() {
       setData(res);
       setError(null);
     } catch (err) {
-      setError(err instanceof AppError ? err : new AppError((err as Error).message));
+      setError(err instanceof AppError ? err : new AppError("UNKNOWN_ERROR", (err as Error).message));
     } finally {
       setIsLoading(false);
     }
@@ -70,7 +70,7 @@ export function useMemberProfile() {
       setData(res);
       setError(null);
     } catch (err) {
-      setError(err instanceof AppError ? err : new AppError((err as Error).message));
+      setError(err instanceof AppError ? err : new AppError("UNKNOWN_ERROR", (err as Error).message));
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +95,7 @@ export function useJoinRequests(filters?: { status?: MembershipStatus; churchId?
       setData(res || []);
       setError(null);
     } catch (err) {
-      setError(err instanceof AppError ? err : new AppError((err as Error).message));
+      setError(err instanceof AppError ? err : new AppError("UNKNOWN_ERROR", (err as Error).message));
     } finally {
       setIsLoading(false);
     }

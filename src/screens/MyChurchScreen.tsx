@@ -135,8 +135,8 @@ export function MyChurchScreen() {
       text,
       userId: user?.id,
       authorName,
-      authorAvatar,
-      authorRole: user?.role,
+      authorAvatar: user?.avatarUrl || undefined,
+      authorRole: (user?.role as string) || undefined,
     });
 
     if (res.success) {
@@ -261,8 +261,8 @@ export function MyChurchScreen() {
                     key={item.id}
                     item={item}
                     currentUserId={user?.id}
-                    currentUserName={user?.fullName}
-                    currentUserAvatar={user?.avatarUrl}
+                    currentUserName={user?.fullName || undefined}
+                    currentUserAvatar={user?.avatarUrl || undefined}
                     onReact={handleReact}
                     onAddComment={handleAddComment}
                     showInlineComments={true}

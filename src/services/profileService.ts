@@ -130,7 +130,7 @@ export async function loadMemberProfile(
         role: 'member',
         campus: backendProfile.city,
         profileImageUrl: backendProfile.profilePhotoUrl || userAvatarUrl || undefined,
-        membershipDate: backendProfile.completedAt,
+        membershipDate: backendProfile.completedAt || new Date().toISOString(),
         status: 'active',
       };
       return {

@@ -27,6 +27,7 @@ import { Church } from '../types';
 import churchService from '../services/churchService';
 import { ChurchCard } from '../components/church/ChurchCard';
 import { ChurchListSkeleton } from '../components/church/ChurchCardSkeleton';
+import { tokenStore } from '../lib/apiClient';
 
 export function FindYourChurchScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -34,6 +35,17 @@ export function FindYourChurchScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Auth guard: redirect to welcome if no access token exists
+    const checkAuth = async () => {
+      const token = await tokenStore.getAccess();
+      if (!token) {
+        router.replace('/welcome');
+      }
+    };
+    checkAuth();
+  }, []);
 
   const fetchChurches = useCallback(async (query = '') => {
     setError(null);

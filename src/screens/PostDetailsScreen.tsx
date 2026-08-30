@@ -116,8 +116,8 @@ export function PostDetailsScreen() {
         text: commentText.trim(),
         userId: user?.id,
         authorName: user?.fullName || 'You',
-        authorAvatar: user?.avatarUrl,
-        authorRole: user?.role,
+        authorAvatar: user?.avatarUrl || undefined,
+        authorRole: (user?.role as string) || undefined,
       });
 
       if (res.success) {

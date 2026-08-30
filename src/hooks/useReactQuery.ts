@@ -1,5 +1,7 @@
+// src/hooks/useReactQuery.ts
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiClient, apiUrl } from "../lib/apiClient";
+import { apiClient } from "../lib/apiClient";
+import { queryKeys } from "../lib/queryKeys";
 import type {
   User,
   MemberProfile,
@@ -10,21 +12,23 @@ import type {
   MembershipStatus,
 } from "../types/api";
 
-export function useAuthQuery() {
+export function useMe() {
   return useQuery<User, Error>({
-    queryKey: ["/auth/me"],
+    queryKey: queryKeys.user(),
     queryFn: async () => {
       const res = await apiClient.get<User>("/auth/me");
-      return res;
+      return (res as any).user || (res as any).data?.user || res;
     },
-    staleTime: 60_000,
+    staleTime: 5 * 60 * 1000,
     retry: false,
   });
 }
 
+export const useAuthQuery = useMe;
+
 export function useOnboardingDraftQuery() {
   return useQuery<ChurchOnboardingDraft | null, Error>({
-    queryKey: ["/onboarding/church/draft"],
+    queryKey: queryKeys.onboardingDraft(),
     queryFn: async () => {
       const res = await apiClient.get<ChurchOnboardingDraft>("/onboarding/church/draft");
       return res;
@@ -36,7 +40,7 @@ export function useOnboardingDraftQuery() {
 
 export function useMemberProfileQuery() {
   return useQuery<MemberProfile | null, Error>({
-    queryKey: ["/members/profile"],
+    queryKey: queryKeys.memberProfile(),
     queryFn: async () => {
       const res = await apiClient.get<MemberProfile>("/members/profile");
       return res;
@@ -48,10 +52,10 @@ export function useMemberProfileQuery() {
 
 export function useJoinRequestsQuery(filters?: { status?: MembershipStatus; churchId?: string }) {
   return useQuery<ChurchMembership[], Error>({
-    queryKey: ["/join-requests", filters],
+    queryKey: queryKeys.joinRequests(filters),
     queryFn: async () => {
       const res = await apiClient.get<ChurchMembership[]>("/join-requests", { params: filters });
-      return res;
+      return res || [];
     },
     staleTime: 60_000,
     retry: false,
@@ -63,14 +67,14 @@ export function useBanMutation() {
 
   return useMutation({
     mutationFn: async (vars: { membershipId: string; banReason?: string }) => {
-      const res = await apiClient.post<{ status: string; message: string; membership: ChurchMembership }>(apiUrl("/join-requests/ban"), {
+      const res = await apiClient.post<{ status: string; message: string; membership: ChurchMembership }>("/join-requests/ban", {
         membershipId: vars.membershipId,
         banReason: vars.banReason,
       });
       return res;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/join-requests"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.joinRequests() });
     },
   });
 }
@@ -80,13 +84,13 @@ export function useUnbanMutation() {
 
   return useMutation({
     mutationFn: async (vars: { membershipId: string }) => {
-      const res = await apiClient.post<{ status: string; message: string; membership: ChurchMembership }>(apiUrl("/join-requests/unban"), {
+      const res = await apiClient.post<{ status: string; message: string; membership: ChurchMembership }>("/join-requests/unban", {
         membershipId: vars.membershipId,
       });
       return res;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/join-requests"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.joinRequests() });
     },
   });
 }
@@ -96,13 +100,13 @@ export function useApproveMutation() {
 
   return useMutation({
     mutationFn: async (vars: { membershipId: string }) => {
-      const res = await apiClient.post<{ status: string; message: string }>(apiUrl("/join-requests/approve"), {
+      const res = await apiClient.post<{ status: string; message: string }>("/join-requests/approve", {
         membershipId: vars.membershipId,
       });
       return res;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/join-requests"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.joinRequests() });
     },
   });
 }
@@ -112,14 +116,14 @@ export function useRejectMutation() {
 
   return useMutation({
     mutationFn: async (vars: { membershipId: string; rejectionReason?: string }) => {
-      const res = await apiClient.post<{ status: string; message: string }>(apiUrl("/join-requests/reject"), {
+      const res = await apiClient.post<{ status: string; message: string }>("/join-requests/reject", {
         membershipId: vars.membershipId,
         rejectionReason: vars.rejectionReason,
       });
       return res;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/join-requests"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.joinRequests() });
     },
   });
 }
@@ -129,11 +133,11 @@ export function useCompleteOnboardingMutation() {
 
   return useMutation({
     mutationFn: async () => {
-      const res = await apiClient.post<{ status: string; message: string }>(apiUrl("/onboarding/church/complete"));
+      const res = await apiClient.post<{ status: string; message: string }>("/onboarding/church/complete");
       return res;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/onboarding/church/draft"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.onboardingDraft() });
     },
   });
 }
@@ -150,11 +154,11 @@ export function useSaveStep1Mutation() {
       congregationSize: CongregationSize;
       foundedYear?: number;
     }) => {
-      const res = await apiClient.patch<{ status: string }>(apiUrl("/onboarding/church/step-1"), payload);
+      const res = await apiClient.patch<{ status: string }>("/onboarding/church/step-1", payload);
       return res;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/onboarding/church/draft"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.onboardingDraft() });
     },
   });
 }
@@ -172,11 +176,11 @@ export function useSaveStep2Mutation() {
       primaryLanguage: ChurchLanguage;
       timeZone: string;
     }) => {
-      const res = await apiClient.patch<{ status: string }>(apiUrl("/onboarding/church/step-2"), payload);
+      const res = await apiClient.patch<{ status: string }>("/onboarding/church/step-2", payload);
       return res;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/onboarding/church/draft"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.onboardingDraft() });
     },
   });
 }
@@ -187,20 +191,18 @@ export function useSaveStep3Mutation() {
   return useMutation({
     mutationFn: async (payload: {
       serviceTimes: { label: string; dayOfWeek: number; time: string }[];
-      logoFile?: File | null;
+      logoFile?: any;
     }) => {
       const formData = new FormData();
       formData.append("serviceTimes", JSON.stringify(payload.serviceTimes));
       if (payload.logoFile) {
         formData.append("logo", payload.logoFile);
       }
-      const res = await apiClient.patch<{ status: string }>(apiUrl("/onboarding/church/step-3"), formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await apiClient.patchForm<{ status: string }>("/onboarding/church/step-3", formData);
       return res;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/onboarding/church/draft"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.onboardingDraft() });
     },
   });
 }
@@ -218,11 +220,11 @@ export function useSaveStep4Mutation() {
         icon?: string;
       }[];
     }) => {
-      const res = await apiClient.patch<{ status: string }>(apiUrl("/onboarding/church/step-4"), payload);
+      const res = await apiClient.patch<{ status: string }>("/onboarding/church/step-4", payload);
       return res;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/onboarding/church/draft"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.onboardingDraft() });
     },
   });
 }

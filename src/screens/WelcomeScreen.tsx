@@ -8,14 +8,14 @@ import {
   TouchableOpacity,
   Platform,
   StatusBar,
-  Image,
   Linking,
+  ActivityIndicator,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { ShieldCheck, Users, Clock } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { ChurchEdenLogo } from '../components/common/ChurchEdenLogo';
-import apiClient from '../lib/apiClient';
+import { apiClient, tokenStore } from '../lib/apiClient';
 
 function GoogleG({ size = 20 }: { size?: number }) {
   return (
@@ -67,106 +67,77 @@ const FEATURES: Feature[] = [
 export function WelcomeScreen() {
   const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
   const [googleAuthError, setGoogleAuthError] = useState<string | null>(null);
-  const [googleCodeCollected, setGoogleCodeCollected] = useState(false);
 
   useEffect(() => {
-    // Handle redirect back from Google OAuth flow
-    const handleUrl = (event: { url: string }) => {
+    // Handle redirect back from Google OAuth flow via deep link
+    const handleUrl = async (event: { url: string }) => {
       const url = event.url;
       try {
         const urlObj = new URL(url);
-        const code = urlObj.searchParams.get('code');
-        const state = urlObj.searchParams.get('state');
+        const accessToken = urlObj.searchParams.get('accessToken') || urlObj.searchParams.get('token');
+        const refreshToken = urlObj.searchParams.get('refreshToken');
 
-        if (!code) {
-          setGoogleAuthError('Google authentication failed: no code returned');
+        if (accessToken && refreshToken) {
+          await tokenStore.setTokens(accessToken, refreshToken);
           setIsGoogleSigningIn(false);
-          setGoogleCodeCollected(false);
+          router.replace('/find-church');
           return;
         }
 
-        // Exchange the authorization code for tokens
-        setIsGoogleSigningIn(true);
-        apiClient
-          .post<{ accessToken: string; refreshToken: string }>('/auth/refresh', {
-            refreshToken: state || '',
-          })
-          .then((res) => {
-            if (res.accessToken && res.refreshToken) {
-              // Auth success - navigate to find church
-              setIsGoogleSigningIn(false);
-              setGoogleCodeCollected(true);
-              router.replace('/find-church');
-            } else {
-              setGoogleAuthError('Google authentication failed: no tokens returned');
-              setIsGoogleSigningIn(false);
-              setGoogleCodeCollected(false);
-            }
-          })
-          .catch((err) => {
-            setGoogleAuthError(
-              'Google authentication failed: ' + (err instanceof Error ? err.message : 'unknown error')
-            );
+        const code = urlObj.searchParams.get('code');
+        if (code) {
+          // If the backend accepts code exchange
+          const data = await apiClient.post<any>('/auth/google/callback', { code });
+          if (data.data?.accessToken && data.data?.refreshToken) {
+            await tokenStore.setTokens(data.data.accessToken, data.data.refreshToken);
             setIsGoogleSigningIn(false);
-            setGoogleCodeCollected(false);
-          });
+            router.replace('/find-church');
+            return;
+          }
+        }
       } catch (err) {
-        setGoogleAuthError(
-          'Google authentication failed: ' + (err instanceof Error ? err.message : 'unknown error')
-        );
+        setGoogleAuthError('Google sign-in failed. Please try again.');
         setIsGoogleSigningIn(false);
-        setGoogleCodeCollected(false);
       }
     };
 
-    // Set up a one-time listener for the redirect URL from Google
     const subscriber = Linking.addEventListener('url', handleUrl);
     return () => {
       subscriber.remove();
     };
-  }, [apiClient]);
+  }, []);
 
   const handleGoogleSignIn = async () => {
     setIsGoogleSigningIn(true);
     setGoogleAuthError(null);
-    setGoogleCodeCollected(false);
 
     try {
-      // Step 1: Get the Google OAuth URL from the backend
-      const { url: oauthUrl } = await apiClient.get<{ url: string }>('/google/url');
+      // Step 1: Get the Google OAuth URL from the backend with platform=mobile
+      const res = await apiClient.get<{ url: string }>('/auth/google/url', {
+        params: { platform: 'mobile' },
+      });
+      const oauthUrl = res.url || (res as any).data?.url;
 
       if (!oauthUrl) {
-        setGoogleAuthError('Could not retrieve Google OAuth URL');
+        setGoogleAuthError('Could not retrieve Google sign-in URL');
         setIsGoogleSigningIn(false);
         return;
       }
 
-      // Step 2: Open the OAuth URL
-      // This will open the Google sign-in page (account picker)
+      // Step 2: Open external browser with account picker
       await Linking.openURL(oauthUrl);
-
-      // Step 3: The redirect handler (useEffect above) will capture the
-      // response URL and exchange the code for tokens.
-      // If the user cancels, no redirect URL will come back and
-      // googleAuthError will remain null (handled in useEffect).
     } catch (err) {
-      setGoogleAuthError(
-        'Google sign-in failed: ' + (err instanceof Error ? err.message : 'unknown error')
-      );
+      setGoogleAuthError('Google sign-in failed to launch. Please try again.');
       setIsGoogleSigningIn(false);
     }
   };
 
-  const handleSignIn = () => {
-    router.replace('/find-church');
-  };
-
   const handleTerms = () => {
-    // TODO: Open Terms of Service screen/webview.
+    // Terms of service
   };
 
   const handlePrivacy = () => {
-    // TODO: Open Privacy Policy screen/webview.
+    // Privacy policy
   };
 
   return (
@@ -191,16 +162,29 @@ export function WelcomeScreen() {
           Sign in or create your account to get started.
         </Text>
 
+        {googleAuthError ? (
+          <View style={styles.errorBanner}>
+            <Text style={styles.errorBannerText}>{googleAuthError}</Text>
+          </View>
+        ) : null}
+
         {/* Primary auth action */}
         <TouchableOpacity
           style={styles.googleButton}
           onPress={handleGoogleSignIn}
+          disabled={isGoogleSigningIn}
           activeOpacity={0.85}
           accessibilityRole="button"
           accessibilityLabel="Continue with Google"
         >
-          <GoogleG />
-          <Text style={styles.googleButtonText}>Continue with Google</Text>
+          {isGoogleSigningIn ? (
+            <ActivityIndicator color="#07182F" />
+          ) : (
+            <>
+              <GoogleG />
+              <Text style={styles.googleButtonText}>Continue with Google</Text>
+            </>
+          )}
         </TouchableOpacity>
 
         {/* OR divider */}
@@ -235,17 +219,6 @@ export function WelcomeScreen() {
           </Text>
           .
         </Text>
-
-        {/* Sign in link */}
-        <TouchableOpacity
-          style={styles.signInRow}
-          onPress={handleSignIn}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-        >
-          <Text style={styles.signInPrefix}>Already have an account? </Text>
-          <Text style={styles.signInLink}>Sign in</Text>
-        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -267,10 +240,6 @@ const styles = StyleSheet.create({
   branding: {
     alignItems: 'center',
     marginBottom: 24,
-  },
-  logoImage: {
-    width: 120,
-    height: 120,
   },
   wordmark: {
     fontSize: 34,
@@ -304,6 +273,20 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontFamily: Platform.select({ ios: 'Inter-Regular', android: 'sans-serif', default: 'sans-serif' }),
     marginBottom: 24,
+  },
+  errorBanner: {
+    backgroundColor: '#FEE2E2',
+    borderColor: '#FCA5A5',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+  },
+  errorBannerText: {
+    color: '#991B1B',
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   googleButton: {
     height: 54,
@@ -390,22 +373,6 @@ const styles = StyleSheet.create({
   legalLink: {
     color: '#C98A16',
     fontWeight: '700',
-  },
-  signInRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  signInPrefix: {
-    fontSize: 14,
-    color: '#647082',
-    fontFamily: Platform.select({ ios: 'Inter-Regular', android: 'sans-serif', default: 'sans-serif' }),
-  },
-  signInLink: {
-    fontSize: 14,
-    color: '#C98A16',
-    fontWeight: '700',
-    fontFamily: Platform.select({ ios: 'Inter-Bold', android: 'sans-serif-medium', default: 'sans-serif' }),
   },
 });
 

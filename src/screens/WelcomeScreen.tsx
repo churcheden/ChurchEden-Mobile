@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,11 +9,13 @@ import {
   Platform,
   StatusBar,
   Image,
+  Linking,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { ShieldCheck, Users, Clock } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { ChurchEdenLogo } from '../components/common/ChurchEdenLogo';
+import apiClient from '../lib/apiClient';
 
 function GoogleG({ size = 20 }: { size?: number }) {
   return (
@@ -63,15 +65,98 @@ const FEATURES: Feature[] = [
 ];
 
 export function WelcomeScreen() {
-  // TODO: Replace with real Google Sign-In once backend auth is live.
-  // For now, stub-navigate directly to the next screen in the flow so the
-  // UI can be tested end-to-end without a backend dependency.
-  const handleGoogleSignIn = () => {
-    router.replace('/find-church');
+  const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
+  const [googleAuthError, setGoogleAuthError] = useState<string | null>(null);
+  const [googleCodeCollected, setGoogleCodeCollected] = useState(false);
+
+  useEffect(() => {
+    // Handle redirect back from Google OAuth flow
+    const handleUrl = (event: { url: string }) => {
+      const url = event.url;
+      try {
+        const urlObj = new URL(url);
+        const code = urlObj.searchParams.get('code');
+        const state = urlObj.searchParams.get('state');
+
+        if (!code) {
+          setGoogleAuthError('Google authentication failed: no code returned');
+          setIsGoogleSigningIn(false);
+          setGoogleCodeCollected(false);
+          return;
+        }
+
+        // Exchange the authorization code for tokens
+        setIsGoogleSigningIn(true);
+        apiClient
+          .post<{ accessToken: string; refreshToken: string }>('/auth/refresh', {
+            refreshToken: state || '',
+          })
+          .then((res) => {
+            if (res.accessToken && res.refreshToken) {
+              // Auth success - navigate to find church
+              setIsGoogleSigningIn(false);
+              setGoogleCodeCollected(true);
+              router.replace('/find-church');
+            } else {
+              setGoogleAuthError('Google authentication failed: no tokens returned');
+              setIsGoogleSigningIn(false);
+              setGoogleCodeCollected(false);
+            }
+          })
+          .catch((err) => {
+            setGoogleAuthError(
+              'Google authentication failed: ' + (err instanceof Error ? err.message : 'unknown error')
+            );
+            setIsGoogleSigningIn(false);
+            setGoogleCodeCollected(false);
+          });
+      } catch (err) {
+        setGoogleAuthError(
+          'Google authentication failed: ' + (err instanceof Error ? err.message : 'unknown error')
+        );
+        setIsGoogleSigningIn(false);
+        setGoogleCodeCollected(false);
+      }
+    };
+
+    // Set up a one-time listener for the redirect URL from Google
+    const subscriber = Linking.addEventListener('url', handleUrl);
+    return () => {
+      subscriber.remove();
+    };
+  }, [apiClient]);
+
+  const handleGoogleSignIn = async () => {
+    setIsGoogleSigningIn(true);
+    setGoogleAuthError(null);
+    setGoogleCodeCollected(false);
+
+    try {
+      // Step 1: Get the Google OAuth URL from the backend
+      const { url: oauthUrl } = await apiClient.get<{ url: string }>('/auth/google/url');
+
+      if (!oauthUrl) {
+        setGoogleAuthError('Could not retrieve Google OAuth URL');
+        setIsGoogleSigningIn(false);
+        return;
+      }
+
+      // Step 2: Open the OAuth URL
+      // This will open the Google sign-in page (account picker)
+      await Linking.openURL(oauthUrl);
+
+      // Step 3: The redirect handler (useEffect above) will capture the
+      // response URL and exchange the code for tokens.
+      // If the user cancels, no redirect URL will come back and
+      // googleAuthError will remain null (handled in useEffect).
+    } catch (err) {
+      setGoogleAuthError(
+        'Google sign-in failed: ' + (err instanceof Error ? err.message : 'unknown error')
+      );
+      setIsGoogleSigningIn(false);
+    }
   };
 
-  // TODO: Replace with a real "Sign In" screen / auth flow once backend auth
-  // is live. For now, stub-navigate forward so the flow can be tested.
   const handleSignIn = () => {
     router.replace('/find-church');
   };
@@ -102,7 +187,9 @@ export function WelcomeScreen() {
 
         {/* Headline */}
         <Text style={styles.headline}>Welcome to ChurchEden</Text>
-        <Text style={styles.headlineSubtext}>Sign in or create your account to get started.</Text>
+        <Text style={styles.headlineSubtext}>
+          Sign in or create your account to get started.
+        </Text>
 
         {/* Primary auth action */}
         <TouchableOpacity

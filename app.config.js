@@ -3,11 +3,11 @@ module.exports = ({ config }) => {
   const env = process.env.EXPO_PUBLIC_ENV || 'development';
   const bundleId = process.env.EXPO_PUBLIC_BUNDLE_ID || 'com.churcheden.app';
   const packageName = process.env.EXPO_PUBLIC_PACKAGE_NAME || 'com.churcheden.app';
-  
-  const appName = env === 'production' 
-    ? 'ChurchEden' 
-    : env === 'staging' 
-      ? 'ChurchEden (Staging)' 
+
+  const appName = env === 'production'
+    ? 'ChurchEden'
+    : env === 'staging'
+      ? 'ChurchEden (Staging)'
       : 'ChurchEden (Dev)';
 
   return {
@@ -71,7 +71,7 @@ module.exports = ({ config }) => {
     ],
     extra: {
       eas: {
-        projectId: '00000000-0000-0000-0000-000000000000'
+        projectId: "11aa289e-8990-480b-833b-ce15fad0a5a7"
       },
       apiUrl: process.env.EXPO_PUBLIC_API_URL,
       paystackPublicKey: process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY,

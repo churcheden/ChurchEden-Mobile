@@ -4,7 +4,7 @@ const extra = Constants.expoConfig?.extra || {};
 
 export const Config = {
   env: (process.env.EXPO_PUBLIC_ENV || extra.environment || 'development') as 'development' | 'staging' | 'production',
-  apiUrl: process.env.EXPO_PUBLIC_API_URL || extra.apiUrl || 'https://api.churcheden.app/v1',
+  apiUrl: process.env.EXPO_PUBLIC_API_URL || extra.apiUrl || 'https://api.churcheden.app/api/v1',
   bundleId: process.env.EXPO_PUBLIC_BUNDLE_ID || 'com.churcheden.app',
   packageName: process.env.EXPO_PUBLIC_PACKAGE_NAME || 'com.churcheden.app',
   

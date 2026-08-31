@@ -6,8 +6,18 @@ import { router } from 'expo-router';
 export function useChurchRequest() {
   return useMutation({
     mutationFn: (data: ChurchRequestSubmit) => churchRequestService.submit(data),
-    onSuccess: () => {
-      router.push('/church-request-confirmation');
+    onSuccess: (_, data) => {
+      router.push({
+        pathname: '/church-request-confirmation',
+        params: {
+          churchName: data.churchName,
+          city: data.city,
+          leaderName: data.leaderName,
+          contactMode: data.phoneContact ? 'phone' : data.emailContact ? 'email' : '',
+          phone: data.phoneContact ?? '',
+          email: data.emailContact ?? '',
+        },
+      });
     },
   });
 }

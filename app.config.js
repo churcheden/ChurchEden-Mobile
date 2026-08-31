@@ -57,6 +57,13 @@ module.exports = ({ config }) => {
       'expo-secure-store',
       'expo-web-browser',
       [
+        'expo-image-picker',
+        {
+          photosPermission: 'ChurchEden requires access to your photo library to update your profile picture.',
+          cameraPermission: 'ChurchEden requires camera access to take a profile picture.'
+        }
+      ],
+      [
         'expo-font',
         {
           fonts: [

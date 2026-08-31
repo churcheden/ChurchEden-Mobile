@@ -7,7 +7,7 @@ import {
   NextService,
   ApiResponse,
 } from '../types';
-import { churchService } from './churchService';
+import { apiClient } from '../lib/apiClient';
 import { getSelectedChurchId } from './selectedChurchStore';
 
 /**
@@ -39,9 +39,6 @@ import { getSelectedChurchId } from './selectedChurchStore';
  * Backed by realistic mock data with simulated network latency, mirroring the
  * existing repository pattern used across ChurchEden services.
  */
-
-const CURRENT_CHURCH_ID = 'church_1';
-
 const MOCK_MEMBER: Member = {
   id: 'mbr_102',
   fullName: 'Tega Samuel',
@@ -143,12 +140,53 @@ class MemberDashboardService {
   }
 
   async getCurrentChurch(): Promise<ApiResponse<Church>> {
-    const churchId = await getSelectedChurchId();
-    const res = await churchService.getChurchById(churchId);
-    if (!res.success) {
-      return { success: false, data: null as unknown as Church, error: res.error };
+    // Resolve the member's real church from their approved membership
+    // (GET /auth/me) instead of a mock directory lookup. This keeps the
+    // dashboard in sync with the actual membership created on join/approval.
+    try {
+      const me = await apiClient.get<{
+        user?: {
+          memberships?: Array<{
+            status: string;
+            church: { id: string; name: string; logoUrl: string | null; city?: string | null } | null;
+          }>;
+        };
+      }>('/auth/me');
+      const memberships = me.user?.memberships ?? [];
+      const approved = memberships.filter(
+        (m) => m.status === 'APPROVED' && m.church && m.church.id && m.church.name,
+      );
+      const storedChurchId = await getSelectedChurchId();
+      const chosen =
+        approved.find((m) => m.church?.id === storedChurchId) ?? approved[0];
+
+      if (chosen?.church) {
+        const church = chosen.church;
+        return {
+          success: true,
+          data: {
+            id: church.id,
+            name: church.name,
+            imageUrl: church.logoUrl ?? undefined,
+            city: church.city ?? undefined,
+            isRegistered: true,
+            status: 'verified',
+          },
+        };
+      }
+
+      return {
+        success: false,
+        data: null as unknown as Church,
+        error: 'You are not a member of any church yet.',
+      };
+    } catch (err) {
+      return {
+        success: false,
+        data: null as unknown as Church,
+        error: err instanceof Error ? err.message : 'Unable to load your church.',
+      };
     }
-    return res;
   }
 
   async getMembershipStatus(): Promise<ApiResponse<{ status: Member['status']; memberSince: string }>> {

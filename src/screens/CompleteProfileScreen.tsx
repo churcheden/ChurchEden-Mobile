@@ -31,6 +31,7 @@ import {
   ArrowRight,
 } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import churchService from '../services/churchService';
 import { loadProfileDraft, saveProfileDraft } from '../services/profileStorage';
 import { setSelectedChurchId } from '../services/selectedChurchStore';
@@ -203,8 +204,9 @@ export function CompleteProfileScreen() {
         photoUri: form.photoUri,
       });
 
-      if (!profileRes.success && profileRes.error?.includes('already')) {
-        // Continue if profile was already created
+      if (!profileRes.success) {
+        alert(profileRes.error || 'Could not save your profile. Please try again.');
+        return;
       }
 
       // 2. Submit join request to backend
@@ -223,6 +225,29 @@ export function CompleteProfileScreen() {
       alert('Network error while sending your request. Please try again.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // ---- Photo picker ----
+  const pickPhoto = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      alert('Photo library permission is required to upload a profile picture. Please enable access in your device settings.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setForm((prev) => ({ ...prev, photoUri: result.assets[0].uri }));
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.photoUri;
+        return next;
+      });
     }
   };
 
@@ -321,10 +346,7 @@ export function CompleteProfileScreen() {
             <View style={styles.photoRow}>
               <TouchableOpacity
                 style={styles.avatarButton}
-                onPress={() => {
-                  // TODO: Replace with real photo picker (expo-image-picker) once available.
-                  return;
-                }}
+                onPress={pickPhoto}
                 activeOpacity={0.8}
                 accessibilityLabel="Add a photo"
               >

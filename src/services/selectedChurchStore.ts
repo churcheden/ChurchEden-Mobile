@@ -30,9 +30,10 @@ export async function setSelectedChurchId(churchId: string): Promise<void> {
 
 /**
  * Read the persisted church ID.
- * Falls back to 'church_1' (Grace Community Church) when nothing is stored.
+ * Returns null when nothing is stored — callers must resolve the real church
+ * from the member's membership (GET /auth/me) rather than a hardcoded mock ID.
  */
-export async function getSelectedChurchId(): Promise<string> {
+export async function getSelectedChurchId(): Promise<string | null> {
   if (cached) return cached;
   try {
     const stored = await AsyncStorage.getItem(KEY);
@@ -43,7 +44,7 @@ export async function getSelectedChurchId(): Promise<string> {
   } catch {
     // Ignored
   }
-  return 'church_1';
+  return null;
 }
 
 /**

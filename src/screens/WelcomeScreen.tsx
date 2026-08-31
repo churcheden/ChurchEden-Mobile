@@ -72,7 +72,7 @@ export function WelcomeScreen() {
   const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
   const [googleAuthError, setGoogleAuthError] = useState<string | null>(null);
 
-  const [, _response, promptAsync] = Google.useIdTokenAuthRequest({
+  const [, _response, promptAsync] = Google.useAuthRequest({
     iosClientId:
       Config.googleIosClientId || undefined,
     androidClientId:
@@ -80,6 +80,7 @@ export function WelcomeScreen() {
     webClientId:
       Config.googleWebClientId || undefined,
     selectAccount: true,
+    responseType: 'id_token',
     redirectUri:
       'https://auth.expo.io/@prinz-anaxy/churcheden-mobile',
   });
@@ -91,7 +92,15 @@ export function WelcomeScreen() {
     try {
       const result = await promptAsync();
 
-      if (result?.type !== 'success' || !result.authentication?.idToken) {
+      if (result?.type !== 'success') {
+        setIsGoogleSigningIn(false);
+        return;
+      }
+
+      const idToken = result.params?.id_token;
+
+      if (!idToken) {
+        setGoogleAuthError('Google sign-in did not return an ID token.');
         setIsGoogleSigningIn(false);
         return;
       }
@@ -103,7 +112,7 @@ export function WelcomeScreen() {
         refreshToken: string;
         profileComplete: boolean;
       }>('/auth/google/token', {
-        idToken: result.authentication.idToken,
+        idToken,
         platform: Platform.OS === 'ios' ? 'ios' : 'android',
       });
 

@@ -14,7 +14,7 @@ module.exports = ({ config }) => {
     orientation: 'portrait',
     icon: './src/assets/images/Just-logo-transparent.png',
     scheme: 'churcheden',
-    userInterfaceStyle: 'dark',
+    userInterfaceStyle: 'light',
     newArchEnabled: true,
     splash: {
       image: './src/assets/images/Just-logo-transparent.png',

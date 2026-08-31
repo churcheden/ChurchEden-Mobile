@@ -13,6 +13,7 @@ import {
 import Svg, { Path } from 'react-native-svg';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { ShieldCheck, Users, Clock } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { ChurchEdenLogo } from '../components/common/ChurchEdenLogo';
@@ -72,17 +73,28 @@ export function WelcomeScreen() {
   const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
   const [googleAuthError, setGoogleAuthError] = useState<string | null>(null);
 
+  const isExpoGo =
+    Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
+  // In Expo Go the Google sign-in goes through Expo's auth proxy
+  // (https://auth.expo.io/...), which is a browser flow. That flow MUST use the
+  // Web/Expo OAuth client ID (not the native iOS/Android client IDs), otherwise
+  // Google rejects the request with "redirect_uri_mismatch". In standalone/dev
+  // builds we use the platform-native client IDs instead.
   const [, _response, promptAsync] = Google.useAuthRequest({
-    iosClientId:
-      Config.googleIosClientId || undefined,
-    androidClientId:
-      Config.googleAndroidClientId || undefined,
-    webClientId:
-      Config.googleWebClientId || undefined,
+    ...(isExpoGo
+      ? {
+          clientId: Config.googleWebClientId || undefined,
+          redirectUri:
+            'https://auth.expo.io/@prinz-anaxy/churcheden-mobile',
+        }
+      : {
+          iosClientId: Config.googleIosClientId || undefined,
+          androidClientId: Config.googleAndroidClientId || undefined,
+          webClientId: Config.googleWebClientId || undefined,
+        }),
     selectAccount: true,
     responseType: 'id_token',
-    redirectUri:
-      'https://auth.expo.io/@prinz-anaxy/churcheden-mobile',
   });
 
   const handleGoogleSignIn = async () => {

@@ -21,6 +21,7 @@ export const Config = {
   // Google OAuth
   googleAndroidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || '',
   googleIosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || '',
+  googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '',
 
   appVersion: Constants.expoConfig?.version || '1.0.0',
   buildNumber: Constants.expoConfig?.ios?.buildNumber || `${Constants.expoConfig?.android?.versionCode || 1}`

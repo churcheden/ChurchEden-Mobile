@@ -72,12 +72,16 @@ export function WelcomeScreen() {
   const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
   const [googleAuthError, setGoogleAuthError] = useState<string | null>(null);
 
-  const [, _response, promptAsync] = Google.useAuthRequest({
+  const [, _response, promptAsync] = Google.useIdTokenAuthRequest({
     iosClientId:
       Config.googleIosClientId || undefined,
     androidClientId:
       Config.googleAndroidClientId || undefined,
+    webClientId:
+      Config.googleWebClientId || undefined,
     selectAccount: true,
+    redirectUri:
+      'https://auth.expo.io/@prinz-anaxy/churcheden-mobile',
   });
 
   const handleGoogleSignIn = async () => {

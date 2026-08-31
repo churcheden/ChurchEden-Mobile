@@ -71,12 +71,11 @@ export function WelcomeScreen() {
   const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
   const [googleAuthError, setGoogleAuthError] = useState<string | null>(null);
 
-  // Native custom-scheme deep link. This intentionally does NOT use Expo's
-  // auth proxy (auth.expo.io) — the backend redirects mobile OAuth back to
-  // `churcheden://auth/callback?accessToken=...&refreshToken=...`, which we
-  // capture via openAuthSessionAsync.
+  // Runtime-aware callback URI: Expo Go resolves this to an exp:// URL (Expo
+  // Go can't handle custom schemes), a dev/standalone build resolves it to
+  // churcheden://auth/callback. We pass it to the backend so the final OAuth
+  // redirect targets exactly this URI.
   const redirectUri = AuthSession.makeRedirectUri({
-    scheme: 'churcheden',
     path: 'auth/callback',
   });
 
@@ -85,11 +84,13 @@ export function WelcomeScreen() {
     setGoogleAuthError(null);
 
     try {
+      console.log('[google-oauth] callback uri expected:', redirectUri);
+
       // Step 1: Backend builds the Google OAuth URL (platform=mobile wires the
-      // callback to redirect back to churcheden://)
+      // callback to redirect back to the app, redirect tells it where exactly)
       const res = await apiClient.get<{ status: string; url: string }>(
         '/auth/google/url',
-        { params: { platform: 'mobile' } }
+        { params: { platform: 'mobile', redirect: redirectUri } }
       );
       const oauthUrl = res.url;
 
@@ -98,7 +99,7 @@ export function WelcomeScreen() {
       }
 
       // Step 2: Open the OAuth URL in a browser sheet and await the redirect
-      // back into the app via the churcheden:// deep link.
+      // back into the app via the deep link.
       const result = await WebBrowser.openAuthSessionAsync(
         oauthUrl,
         redirectUri
@@ -108,6 +109,8 @@ export function WelcomeScreen() {
         setIsGoogleSigningIn(false);
         return;
       }
+
+      console.log('[google-oauth] callback uri received:', result.url);
 
       // Step 3: Parse tokens from the deep-link URL's query params
       const url = result.url;

@@ -95,7 +95,7 @@ export const rejectMemberSchema = z.object({
 
 export const banMemberSchema = z.object({
   membershipId: z.string().min(1, 'Membership ID is required'),
-  banReason: z.string().trim().min(1, 'Ban reason is required.').max(500, 'Ban reason must be 500 characters or less.'),
+  banReason: z.string().trim().max(500, 'Ban reason must be 500 characters or less.').optional(),
 });
 
 export const unbanMemberSchema = z.object({

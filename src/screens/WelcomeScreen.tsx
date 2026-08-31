@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,14 +8,18 @@ import {
   TouchableOpacity,
   Platform,
   StatusBar,
-  Linking,
   ActivityIndicator,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
 import { ShieldCheck, Users, Clock } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { ChurchEdenLogo } from '../components/common/ChurchEdenLogo';
 import { apiClient, tokenStore } from '../lib/apiClient';
+import Config from '../constants/Config';
+
+WebBrowser.maybeCompleteAuthSession();
 
 function GoogleG({ size = 20 }: { size?: number }) {
   return (
@@ -68,66 +72,51 @@ export function WelcomeScreen() {
   const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
   const [googleAuthError, setGoogleAuthError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Handle redirect back from Google OAuth flow via deep link
-    const handleUrl = async (event: { url: string }) => {
-      const url = event.url;
-      try {
-        const urlObj = new URL(url);
-        const accessToken = urlObj.searchParams.get('accessToken') || urlObj.searchParams.get('token');
-        const refreshToken = urlObj.searchParams.get('refreshToken');
-
-        if (accessToken && refreshToken) {
-          await tokenStore.setTokens(accessToken, refreshToken);
-          setIsGoogleSigningIn(false);
-          router.replace('/find-church');
-          return;
-        }
-
-        const code = urlObj.searchParams.get('code');
-        if (code) {
-          // If the backend accepts code exchange
-          const data = await apiClient.post<any>('/auth/google/callback', { code });
-          if (data.data?.accessToken && data.data?.refreshToken) {
-            await tokenStore.setTokens(data.data.accessToken, data.data.refreshToken);
-            setIsGoogleSigningIn(false);
-            router.replace('/find-church');
-            return;
-          }
-        }
-      } catch (err) {
-        setGoogleAuthError('Google sign-in failed. Please try again.');
-        setIsGoogleSigningIn(false);
-      }
-    };
-
-    const subscriber = Linking.addEventListener('url', handleUrl);
-    return () => {
-      subscriber.remove();
-    };
-  }, []);
+  const [, _response, promptAsync] = Google.useAuthRequest({
+    iosClientId:
+      Config.googleIosClientId || undefined,
+    androidClientId:
+      Config.googleAndroidClientId || undefined,
+    selectAccount: true,
+  });
 
   const handleGoogleSignIn = async () => {
     setIsGoogleSigningIn(true);
     setGoogleAuthError(null);
 
     try {
-      // Step 1: Get the Google OAuth URL from the backend with platform=mobile
-      const res = await apiClient.get<{ url: string }>('/auth/google/url', {
-        params: { platform: 'mobile' },
-      });
-      const oauthUrl = res.url || (res as any).data?.url;
+      const result = await promptAsync();
 
-      if (!oauthUrl) {
-        setGoogleAuthError('Could not retrieve Google sign-in URL');
+      if (result?.type !== 'success' || !result.authentication?.idToken) {
         setIsGoogleSigningIn(false);
         return;
       }
 
-      // Step 2: Open external browser with account picker
-      await Linking.openURL(oauthUrl);
+      const res = await apiClient.post<{
+        status: string;
+        message: string;
+        accessToken: string;
+        refreshToken: string;
+        profileComplete: boolean;
+      }>('/auth/google/token', {
+        idToken: result.authentication.idToken,
+        platform: Platform.OS === 'ios' ? 'ios' : 'android',
+      });
+
+      if (!res.accessToken || !res.refreshToken) {
+        throw new Error('No tokens returned');
+      }
+
+      await tokenStore.setTokens(res.accessToken, res.refreshToken);
+      setIsGoogleSigningIn(false);
+
+      if (res.profileComplete === false) {
+        router.replace('/complete-profile');
+      } else {
+        router.replace('/find-church');
+      }
     } catch (err) {
-      setGoogleAuthError('Google sign-in failed to launch. Please try again.');
+      setGoogleAuthError('Google sign-in failed. Please try again.');
       setIsGoogleSigningIn(false);
     }
   };

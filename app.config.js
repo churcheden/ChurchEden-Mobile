@@ -4,11 +4,7 @@ module.exports = ({ config }) => {
   const bundleId = process.env.EXPO_PUBLIC_BUNDLE_ID || 'com.churcheden.app';
   const packageName = process.env.EXPO_PUBLIC_PACKAGE_NAME || 'com.churcheden.app';
 
-  const appName = env === 'production'
-    ? 'ChurchEden'
-    : env === 'staging'
-      ? 'ChurchEden (Staging)'
-      : 'ChurchEden (Dev)';
+  const appName = 'ChurchEden';
 
   return {
     ...config,
@@ -16,7 +12,7 @@ module.exports = ({ config }) => {
     slug: 'churcheden-mobile',
     version: '1.0.0',
     orientation: 'portrait',
-    icon: './src/assets/images/icon.png',
+    icon: './src/assets/images/Just-logo-transparent.png',
     scheme: 'churcheden',
     userInterfaceStyle: 'dark',
     newArchEnabled: true,
@@ -38,7 +34,7 @@ module.exports = ({ config }) => {
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: './src/assets/images/adaptive-icon.png',
+        foregroundImage: './src/assets/images/Just-logo-transparent.png',
         backgroundColor: '#0F172A'
       },
       package: packageName,
@@ -53,12 +49,13 @@ module.exports = ({ config }) => {
       ]
     },
     web: {
-      favicon: './src/assets/images/favicon.png',
+      favicon: './src/assets/images/Just-logo-transparent.png',
       bundler: 'metro'
     },
     plugins: [
       'expo-router',
       'expo-secure-store',
+      'expo-web-browser',
       [
         'expo-font',
         {

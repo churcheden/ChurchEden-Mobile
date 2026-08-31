@@ -54,6 +54,7 @@ export default function RootLayout() {
           <Stack.Screen name="event-details" options={{ headerShown: false, animation: 'slide_from_right' }} />
           <Stack.Screen name="announcements" options={{ headerShown: false, animation: 'slide_from_right' }} />
           <Stack.Screen name="announcement-details" options={{ headerShown: false, animation: 'slide_from_right' }} />
+          <Stack.Screen name="auth/callback" options={{ headerShown: false, animation: 'fade' }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Church Info' }} />
           <Stack.Screen name="+not-found" options={{ title: 'Page Not Found' }} />
         </Stack>

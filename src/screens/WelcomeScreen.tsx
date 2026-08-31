@@ -12,13 +12,11 @@ import {
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
-import Constants, { ExecutionEnvironment } from 'expo-constants';
+import * as AuthSession from 'expo-auth-session';
 import { ShieldCheck, Users, Clock } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { ChurchEdenLogo } from '../components/common/ChurchEdenLogo';
 import { apiClient, tokenStore } from '../lib/apiClient';
-import Config from '../constants/Config';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -73,28 +71,13 @@ export function WelcomeScreen() {
   const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
   const [googleAuthError, setGoogleAuthError] = useState<string | null>(null);
 
-  const isExpoGo =
-    Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
-
-  // In Expo Go the Google sign-in goes through Expo's auth proxy
-  // (https://auth.expo.io/...), which is a browser flow. That flow MUST use the
-  // Web/Expo OAuth client ID (not the native iOS/Android client IDs), otherwise
-  // Google rejects the request with "redirect_uri_mismatch". In standalone/dev
-  // builds we use the platform-native client IDs instead.
-  const [, _response, promptAsync] = Google.useAuthRequest({
-    ...(isExpoGo
-      ? {
-          clientId: Config.googleWebClientId || undefined,
-          redirectUri:
-            'https://auth.expo.io/@prinz-anaxy/churcheden-mobile',
-        }
-      : {
-          iosClientId: Config.googleIosClientId || undefined,
-          androidClientId: Config.googleAndroidClientId || undefined,
-          webClientId: Config.googleWebClientId || undefined,
-        }),
-    selectAccount: true,
-    responseType: 'id_token',
+  // Native custom-scheme deep link. This intentionally does NOT use Expo's
+  // auth proxy (auth.expo.io) — the backend redirects mobile OAuth back to
+  // `churcheden://auth/callback?accessToken=...&refreshToken=...`, which we
+  // capture via openAuthSessionAsync.
+  const redirectUri = AuthSession.makeRedirectUri({
+    scheme: 'churcheden',
+    path: 'auth/callback',
   });
 
   const handleGoogleSignIn = async () => {
@@ -102,40 +85,58 @@ export function WelcomeScreen() {
     setGoogleAuthError(null);
 
     try {
-      const result = await promptAsync();
+      // Step 1: Backend builds the Google OAuth URL (platform=mobile wires the
+      // callback to redirect back to churcheden://)
+      const res = await apiClient.get<{ status: string; url: string }>(
+        '/auth/google/url',
+        { params: { platform: 'mobile' } }
+      );
+      const oauthUrl = res.url;
+
+      if (!oauthUrl) {
+        throw new Error('No OAuth URL returned');
+      }
+
+      // Step 2: Open the OAuth URL in a browser sheet and await the redirect
+      // back into the app via the churcheden:// deep link.
+      const result = await WebBrowser.openAuthSessionAsync(
+        oauthUrl,
+        redirectUri
+      );
 
       if (result?.type !== 'success') {
         setIsGoogleSigningIn(false);
         return;
       }
 
-      const idToken = result.params?.id_token;
+      // Step 3: Parse tokens from the deep-link URL's query params
+      const url = result.url;
+      const params = new URLSearchParams(url.split('#')[0].split('?')[1] ?? '');
+      const accessToken = params.get('accessToken');
+      const refreshToken = params.get('refreshToken');
+      const profileComplete = params.get('profileComplete');
+      const error = params.get('error');
 
-      if (!idToken) {
-        setGoogleAuthError('Google sign-in did not return an ID token.');
+      if (error) {
+        setGoogleAuthError('Google sign-in was not completed.');
         setIsGoogleSigningIn(false);
         return;
       }
 
-      const res = await apiClient.post<{
-        status: string;
-        message: string;
-        accessToken: string;
-        refreshToken: string;
-        profileComplete: boolean;
-      }>('/auth/google/token', {
-        idToken,
-        platform: Platform.OS === 'ios' ? 'ios' : 'android',
-      });
-
-      if (!res.accessToken || !res.refreshToken) {
-        throw new Error('No tokens returned');
+      if (!accessToken || !refreshToken) {
+        setGoogleAuthError(
+          'Sign-in did not return a session. Please try again.'
+        );
+        setIsGoogleSigningIn(false);
+        return;
       }
 
-      await tokenStore.setTokens(res.accessToken, res.refreshToken);
+      // Step 4: Store both tokens securely
+      await tokenStore.setTokens(accessToken, refreshToken);
       setIsGoogleSigningIn(false);
 
-      if (res.profileComplete === false) {
+      // Step 5: Navigate to an authenticated screen
+      if (profileComplete === 'false') {
         router.replace('/complete-profile');
       } else {
         router.replace('/find-church');

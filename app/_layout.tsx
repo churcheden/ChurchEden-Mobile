@@ -40,6 +40,7 @@ export default function RootLayout() {
           <Stack.Screen name="welcome" options={{ headerShown: false, animation: 'fade' }} />
           <Stack.Screen name="find-church" options={{ headerShown: false, animation: 'fade' }} />
           <Stack.Screen name="church-details" options={{ headerShown: false, animation: 'slide_from_right' }} />
+          <Stack.Screen name="change-church" options={{ headerShown: false, animation: 'slide_from_right' }} />
           <Stack.Screen name="pending-approval" options={{ headerShown: false, animation: 'fade' }} />
           <Stack.Screen name="request-rejected" options={{ headerShown: false, animation: 'fade' }} />
           <Stack.Screen name="complete-profile" options={{ headerShown: false, animation: 'slide_from_right' }} />

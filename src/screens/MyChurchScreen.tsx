@@ -191,6 +191,15 @@ export function MyChurchScreen() {
                 church={church}
                 onPress={() => router.push('/church-details')}
               />
+              <TouchableOpacity
+                style={styles.changeChurchBtn}
+                activeOpacity={0.85}
+                onPress={() => router.push('/change-church')}
+                accessibilityRole="button"
+                accessibilityLabel="Change church"
+              >
+                <Text style={styles.changeChurchText}>Change / Leave Church</Text>
+              </TouchableOpacity>
             </View>
 
             {/* Role-Based Composer for Authorized Leaders/Admins */}
@@ -354,6 +363,22 @@ const styles = StyleSheet.create({
   },
   sectionWrap: {
     paddingHorizontal: 20,
+  },
+  changeChurchBtn: {
+    marginTop: 12,
+    marginBottom: 4,
+    alignItems: 'center',
+    backgroundColor: MemberTheme.surface,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: MemberTheme.surfaceBorder,
+    paddingVertical: 11,
+  },
+  changeChurchText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: MemberTheme.primary,
+    fontFamily: 'Inter-SemiBold',
   },
   composerCard: {
     flexDirection: 'row',

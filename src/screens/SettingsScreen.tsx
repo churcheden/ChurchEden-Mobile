@@ -164,7 +164,7 @@ export function SettingsScreen() {
           <SettingsRow
             icon={<ArrowLeftRight size={20} color={AppTheme.gold} strokeWidth={1.8} />}
             label="Switch / Leave Church"
-            onPress={confirmSignOut}
+            onPress={() => router.push('/change-church')}
           />
         </SettingsSection>
 

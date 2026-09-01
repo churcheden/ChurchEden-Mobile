@@ -36,12 +36,13 @@ import {
 import { router, useLocalSearchParams } from 'expo-router';
 import { Church } from '../types';
 import churchService from '../services/churchService';
+import { apiClient } from '../lib/apiClient';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export function ChurchDetailsScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
-  const churchId = params.id || 'church_1';
+  const routeChurchId = params.id || undefined;
 
   const [church, setChurch] = useState<Church | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,7 +56,31 @@ export function ChurchDetailsScreen() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await churchService.getChurchById(churchId);
+      // Resolve the target church. When no id is passed (e.g. tapping the
+      // current church from My Church), fall back to the member's approved
+      // church from their /auth/me memberships.
+      let targetId = routeChurchId;
+      if (!targetId) {
+        try {
+          const me = await apiClient.get<{
+            user?: { memberships?: Array<{ status: string; church: { id: string } | null }> };
+          }>('/auth/me');
+          const approved = (me?.user?.memberships ?? []).find(
+            (m) => m.status === 'APPROVED' && m.church?.id,
+          );
+          targetId = approved?.church?.id || undefined;
+        } catch {
+          targetId = undefined;
+        }
+      }
+
+      if (!targetId) {
+        setError('Please select a church to view its details.');
+        setIsLoading(false);
+        return;
+      }
+
+      const response = await churchService.getChurchById(targetId);
       if (response.success && response.data) {
         setChurch(response.data);
         setIsFavorite(response.data.isFavorite || false);
@@ -67,7 +92,7 @@ export function ChurchDetailsScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, [churchId]);
+  }, [routeChurchId]);
 
   useEffect(() => {
     fetchChurch();

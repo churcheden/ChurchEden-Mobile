@@ -9,7 +9,10 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "check-types": "tsc --noEmit",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
@@ -47,7 +50,8 @@
     "@types/react": "~19.1.10",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~10.0.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "vitest": "^3.2.7"
   },
   "private": true
 }

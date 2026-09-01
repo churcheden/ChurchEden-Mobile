@@ -7,6 +7,7 @@ export interface ProfileDraft {
   dateOfBirth?: string;
   gender?: string;
   phone?: string;
+  phoneCountry?: string;
   email?: string;
   city?: string;
   fullAddress?: string;

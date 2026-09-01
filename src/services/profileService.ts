@@ -26,6 +26,7 @@ export interface CompleteProfilePayload {
   dateOfBirth: string; // ISO string
   gender: string;
   phoneNumber: string;
+  phoneCountry?: string;
   contactEmail: string;
   city: string;
   address: string;
@@ -67,13 +68,13 @@ export async function submitCompleteProfile(
     formData.append('dateOfBirth', dob);
     
     formData.append('gender', normalizeGender(payload.gender));
-    
-    // Normalize phone number with '+' prefix if missing
-    let phone = payload.phoneNumber.trim().replace(/[\s()-]/g, '');
-    if (!phone.startsWith('+')) {
-      phone = '+' + phone;
+
+    // Phone is already normalized to E.164 on the form (country-aware). Sending
+    // the country ISO with it lets the backend validate/re-normalize identically.
+    formData.append('phoneNumber', payload.phoneNumber.trim());
+    if (payload.phoneCountry) {
+      formData.append('phoneCountryCode', payload.phoneCountry.trim().toUpperCase());
     }
-    formData.append('phoneNumber', phone);
     
     formData.append('contactEmail', payload.contactEmail.trim().toLowerCase());
     formData.append('city', payload.city.trim());

@@ -18,7 +18,6 @@ import {
 import {
   ChevronLeft,
   Calendar,
-  Phone,
   Mail,
   MapPin,
   Home,
@@ -35,6 +34,8 @@ import * as ImagePicker from 'expo-image-picker';
 import churchService from '../services/churchService';
 import { loadProfileDraft, saveProfileDraft } from '../services/profileStorage';
 import { setSelectedChurchId } from '../services/selectedChurchStore';
+import PhoneInput from '../components/common/PhoneInput';
+import { DEFAULT_COUNTRY, normalizeToE164, phoneError } from '../lib/phone';
 
 const GENDERS = ['Male', 'Female', 'Prefer not to say'];
 const MARITAL_STATUSES = ['Single', 'Married', 'Divorced', 'Widowed', 'Prefer not to say'];
@@ -47,6 +48,7 @@ interface ProfileForm {
   dateOfBirth: string;
   gender: string;
   phone: string;
+  phoneCountry: string;
   email: string;
   city: string;
   fullAddress: string;
@@ -60,6 +62,7 @@ const EMPTY_FORM: ProfileForm = {
   dateOfBirth: '',
   gender: '',
   phone: '',
+  phoneCountry: DEFAULT_COUNTRY,
   email: '',
   city: '',
   fullAddress: '',
@@ -147,11 +150,14 @@ export function CompleteProfileScreen() {
       errs.dateOfBirth = 'Please choose a valid date of birth.';
     }
 
-    const phoneClean = f.phone.replace(/[\s()-]/g, '');
-    if (!f.phone.trim()) {
+    const phoneTrimmed = f.phone.trim();
+    if (!phoneTrimmed) {
       errs.phone = 'Please enter your phone number.';
-    } else if (phoneClean.length < 9 || phoneClean.length > 15) {
-      errs.phone = 'Enter a valid phone number with country code.';
+    } else {
+      const phoneErr = phoneError(phoneTrimmed, f.phoneCountry);
+      if (phoneErr) {
+        errs.phone = phoneErr;
+      }
     }
 
     const email = f.email.trim();
@@ -195,7 +201,8 @@ export function CompleteProfileScreen() {
         fullName: form.fullName,
         dateOfBirth: form.dateOfBirth,
         gender: form.gender,
-        phoneNumber: form.phone,
+        phoneNumber: normalizeToE164(form.phone, form.phoneCountry) || form.phone,
+        phoneCountry: form.phoneCountry,
         contactEmail: form.email,
         city: form.city,
         address: form.fullAddress || form.city,
@@ -442,18 +449,15 @@ export function CompleteProfileScreen() {
             {/* Phone */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Phone Number *</Text>
-              <View style={[styles.inputWrap, errors.phone && styles.inputWrapError]}>
-                <Phone size={17} color="#8A95A5" strokeWidth={2} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="e.g. +233 24 123 4567"
-                  placeholderTextColor="#8A95A5"
-                  value={form.phone}
-                  onChangeText={setField('phone')}
-                  onBlur={() => enterTouchedRequired('phone')}
-                  keyboardType="phone-pad"
-                />
-              </View>
+              <PhoneInput
+                value={form.phone}
+                onChangeText={setField('phone')}
+                countryIso={form.phoneCountry}
+                onChangeCountry={(iso) => setForm((prev) => ({ ...prev, phoneCountry: iso }))}
+                onBlur={() => enterTouchedRequired('phone')}
+                error={errors.phone}
+                placeholder="e.g. 54 405 3900"
+              />
               {errors.phone ? <Text style={styles.errorText}>{errors.phone}</Text> : null}
             </View>
 

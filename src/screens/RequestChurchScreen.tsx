@@ -16,6 +16,8 @@ import { router } from 'expo-router';
 import { useChurchRequest } from '../hooks/useChurchRequest';
 import { churchRequestSchema } from '../lib/schemas';
 import { isAppError } from '../lib/errors';
+import PhoneInput from '../components/common/PhoneInput';
+import { DEFAULT_COUNTRY, normalizeToE164, phoneError } from '../lib/phone';
 
 export function RequestChurchScreen() {
   const [churchName, setChurchName] = useState('');
@@ -23,6 +25,7 @@ export function RequestChurchScreen() {
   const [leaderName, setLeadPastor] = useState('');
   const [contactMode, setContactMode] = useState<'phone' | 'email'>('phone');
   const [phoneContact, setPhoneContact] = useState('');
+  const [phoneCountry, setPhoneCountry] = useState(DEFAULT_COUNTRY);
   const [emailContact, setEmailContact] = useState('');
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [generalError, setGeneralError] = useState<string | null>(null);
@@ -33,11 +36,23 @@ export function RequestChurchScreen() {
     setFormErrors({});
     setGeneralError(null);
 
+    if (contactMode === 'phone') {
+      const trimmedPhone = phoneContact.trim();
+      const phoneErr = phoneError(trimmedPhone, phoneCountry);
+      if (phoneErr) {
+        setFormErrors({ phoneContact: phoneErr });
+        return;
+      }
+    }
+
     const payload = {
       churchName: churchName.trim(),
       city: city.trim(),
       leaderName: leaderName.trim(),
-      phoneContact: contactMode === 'phone' ? phoneContact.trim() : undefined,
+      phoneContact:
+        contactMode === 'phone'
+          ? normalizeToE164(phoneContact.trim(), phoneCountry) || phoneContact.trim()
+          : undefined,
       emailContact: contactMode === 'email' ? emailContact.trim() : undefined,
     };
 
@@ -187,16 +202,16 @@ export function RequestChurchScreen() {
           {contactMode === 'phone' ? (
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Phone Contact *</Text>
-              <TextInput
-                style={[styles.input, formErrors.phoneContact ? styles.inputError : null]}
-                placeholder="+233 24 123 4567"
-                placeholderTextColor="#8A95A5"
-                keyboardType="phone-pad"
+              <PhoneInput
                 value={phoneContact}
                 onChangeText={(t) => {
                   setPhoneContact(t);
                   if (formErrors.phoneContact) setFormErrors((prev) => ({ ...prev, phoneContact: '' }));
                 }}
+                countryIso={phoneCountry}
+                onChangeCountry={setPhoneCountry}
+                error={formErrors.phoneContact}
+                placeholder="e.g. 54 405 3900"
               />
               {formErrors.phoneContact ? <Text style={styles.fieldError}>{formErrors.phoneContact}</Text> : null}
             </View>

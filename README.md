@@ -115,6 +115,26 @@ npx expo start --tunnel
 
 ---
 
+## Automated Tests
+
+Vitest over the shared logic/services (node environment — no RN native mocking needed). Covers the country-aware **phone validation/E.164 normalization**, zod **schemas**, errors, the refresh mutex, query keys, AsyncStorage-backed stores, and the church service (directory, leave, join-request cancel).
+
+```bash
+npm test           # run once (CI)
+npm run test:watch # watch mode
+npm run test:run   # run once (alias)
+```
+
+**Install note:** this repo uses npm with `--legacy-peer-deps` because `lucide-react-native` declares a `react@^18` peer that conflicts with React 19. Add new dev dependencies with:
+
+```bash
+npm install --legacy-peer-deps -D <pkg>
+```
+
+Configuration lives in `vitest.config.ts` (aliases `@/*` and `@app/*` mirror `tsconfig.json`).
+
+---
+
 ## Expo Tunnel Mode (`--tunnel`) with Ngrok
 
 Expo's tunnel mode allows you to scan the QR code and test the app on physical mobile devices across different Wi-Fi networks or cellular data.

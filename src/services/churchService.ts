@@ -1,8 +1,5 @@
 import { apiClient } from '../lib/apiClient';
-import type {
-  ChurchMembership as BackendMembership,
-  MembershipSummary,
-} from '../types/api';
+import type { ChurchMembership as BackendMembership, AuthMeUser } from '../types/api';
 import { Church, ChurchJoinRequest, ApiResponse } from '../types';
 
 interface DirectoryChurch {
@@ -29,13 +26,13 @@ const toChurch = (c: DirectoryChurch): Church => ({
   description: c.denomination,
 });
 
-const membershipToJoinRequest = (m: MembershipSummary): ChurchJoinRequest => ({
-  id: m.id,
-  churchId: m.church?.id ?? '',
-  churchName: m.church?.name ?? 'Your Church',
-  churchLocation: m.church?.city ?? '',
-  status: (m.status?.toLowerCase() as 'pending' | 'approved' | 'rejected') || 'pending',
-  submittedAt: m.joinedAt || new Date().toISOString(),
+const meToJoinRequest = (u: AuthMeUser): ChurchJoinRequest => ({
+  id: u.id,
+  churchId: u.church?.id ?? '',
+  churchName: u.church?.name ?? 'Your Church',
+  churchLocation: u.church?.city ?? '',
+  status: (u.status?.toLowerCase() as 'pending' | 'approved' | 'rejected') || 'pending',
+  submittedAt: u.joinedAt || new Date().toISOString(),
   rejectionReason: undefined,
 });
 
@@ -121,21 +118,18 @@ class ChurchService {
   }
 
   /**
-   * Check the member's join-request status from their /auth/me memberships.
+   * Check the member's join-request status from their /auth/me response.
+   * A member belongs to at most one church, so the whole membership is read
+   * from `user.status` + `user.church` (there is no memberships[] array).
    */
   async checkJoinRequestStatus(): Promise<ChurchJoinRequest | null> {
     try {
-      const me = await apiClient.get<{ user?: { memberships?: MembershipSummary[] } }>('/auth/me');
-      const memberships = me?.user?.memberships ?? [];
-      if (memberships.length === 0) {
+      const me = await apiClient.get<{ user?: AuthMeUser }>('/auth/me');
+      const user = me?.user;
+      if (!user?.church?.id) {
         return this.activeJoinRequest;
       }
-      // Most recent first is the most relevant in the onboarding flow.
-      const sorted = [...memberships].sort(
-        (a, b) => new Date(b.joinedAt ?? 0).getTime() - new Date(a.joinedAt ?? 0).getTime(),
-      );
-      const latest = sorted[0];
-      const req = membershipToJoinRequest(latest);
+      const req = meToJoinRequest(user);
       this.activeJoinRequest = req;
       return req;
     } catch {

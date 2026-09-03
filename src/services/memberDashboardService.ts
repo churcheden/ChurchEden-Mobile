@@ -8,7 +8,6 @@ import {
   ApiResponse,
 } from '../types';
 import { apiClient } from '../lib/apiClient';
-import { getSelectedChurchId } from './selectedChurchStore';
 
 /**
  * Member dashboard data, conceptually sourced from backend endpoints such as:
@@ -140,28 +139,13 @@ class MemberDashboardService {
   }
 
   async getCurrentChurch(): Promise<ApiResponse<Church>> {
-    // Resolve the member's real church from their approved membership
-    // (GET /auth/me) instead of a mock directory lookup. This keeps the
-    // dashboard in sync with the actual membership created on join/approval.
+    // Resolve the member's real church from their /auth/me response. A member
+    // belongs to at most one church, exposed as `user.church` (single object).
     try {
-      const me = await apiClient.get<{
-        user?: {
-          memberships?: Array<{
-            status: string;
-            church: { id: string; name: string; logoUrl: string | null; city?: string | null } | null;
-          }>;
-        };
-      }>('/auth/me');
-      const memberships = me.user?.memberships ?? [];
-      const approved = memberships.filter(
-        (m) => m.status === 'APPROVED' && m.church && m.church.id && m.church.name,
-      );
-      const storedChurchId = await getSelectedChurchId();
-      const chosen =
-        approved.find((m) => m.church?.id === storedChurchId) ?? approved[0];
+      const me = await apiClient.get<{ user?: { church?: { id: string; name: string; logoUrl: string | null; city?: string | null } | null } }>('/auth/me');
+      const church = me?.user?.church;
 
-      if (chosen?.church) {
-        const church = chosen.church;
+      if (church?.id && church?.name) {
         return {
           success: true,
           data: {

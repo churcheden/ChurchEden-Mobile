@@ -15,14 +15,14 @@ import { useRouter } from 'expo-router';
 import { Search, X, Church as ChurchIcon, AlertCircle } from 'lucide-react-native';
 import { MemberTheme } from '../constants/memberTheme';
 import { Church } from '../types';
-import { AuthMeResponse, MembershipSummary } from '../types/api';
+import { AuthMeResponse, AuthMeUser } from '../types/api';
 import { apiClient } from '../lib/apiClient';
 import churchService from '../services/churchService';
 import { AppHeader } from '../components/common/AppHeader';
 import { ChurchCard } from '../components/church/ChurchCard';
 import { ChurchListSkeleton } from '../components/church/ChurchCardSkeleton';
 
-const toDisplayChurch = (m: MembershipSummary): { id: string; name: string; city: string } | null => {
+const toDisplayChurch = (m: AuthMeUser): { id: string; name: string; city: string } | null => {
   if (!m.church?.id) return null;
   return { id: m.church.id, name: m.church.name || 'Your Church', city: m.church.city || '' };
 };
@@ -30,7 +30,7 @@ const toDisplayChurch = (m: MembershipSummary): { id: string; name: string; city
 export function ChangeChurchScreen() {
   const router = useRouter();
 
-  const [membership, setMembership] = useState<MembershipSummary[]>([]);
+  const [me, setMe] = useState<AuthMeUser | null>(null);
   const [meLoading, setMeLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [churches, setChurches] = useState<Church[]>([]);
@@ -41,10 +41,10 @@ export function ChangeChurchScreen() {
   const loadMembership = useCallback(async () => {
     setMeLoading(true);
     try {
-      const me = await apiClient.get<AuthMeResponse>('/auth/me');
-      setMembership(me?.user?.memberships ?? []);
+      const res = await apiClient.get<AuthMeResponse>('/auth/me');
+      setMe(res?.user ?? null);
     } catch {
-      setMembership([]);
+      setMe(null);
     } finally {
       setMeLoading(false);
     }
@@ -54,15 +54,17 @@ export function ChangeChurchScreen() {
     loadMembership();
   }, [loadMembership]);
 
+  const status = me?.status?.toUpperCase();
+
   const currentChurch = useMemo(() => {
-    const approved = membership.find((m) => m.status === 'APPROVED');
-    return toDisplayChurch(approved!);
-  }, [membership]);
+    if (status !== 'APPROVED') return null;
+    return toDisplayChurch(me!);
+  }, [me, status]);
 
   const pendingChurch = useMemo(() => {
-    const pending = membership.find((m) => m.status === 'PENDING');
-    return toDisplayChurch(pending!);
-  }, [membership]);
+    if (status !== 'PENDING') return null;
+    return toDisplayChurch(me!);
+  }, [me, status]);
 
   const fetchChurches = useCallback(async (query = '') => {
     setDirError(null);
@@ -115,14 +117,11 @@ export function ChangeChurchScreen() {
             }
           }
           // Cancel any pending request before applying elsewhere.
-          if (pendingChurch) {
-            const pending = membership.find((m) => m.status === 'PENDING');
-            if (pending) {
-              const cancelled = await churchService.cancelJoinRequest(pending.id);
-              if (!cancelled.success) {
-                Alert.alert('Could not cancel', cancelled.error || 'Please try again.');
-                return;
-              }
+          if (pendingChurch && me?.id) {
+            const cancelled = await churchService.cancelJoinRequest(me.id);
+            if (!cancelled.success) {
+              Alert.alert('Could not cancel', cancelled.error || 'Please try again.');
+              return;
             }
           }
 
@@ -159,7 +158,7 @@ export function ChangeChurchScreen() {
         proceed();
       }
     },
-    [currentChurch, pendingChurch, membership, submitJoinTo, loadMembership, router],
+    [currentChurch, pendingChurch, me, submitJoinTo, loadMembership, router],
   );
 
   return (

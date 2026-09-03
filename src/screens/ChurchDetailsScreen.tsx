@@ -58,17 +58,16 @@ export function ChurchDetailsScreen() {
     try {
       // Resolve the target church. When no id is passed (e.g. tapping the
       // current church from My Church), fall back to the member's approved
-      // church from their /auth/me memberships.
+      // church from their /auth/me response.
       let targetId = routeChurchId;
       if (!targetId) {
         try {
           const me = await apiClient.get<{
-            user?: { memberships?: Array<{ status: string; church: { id: string } | null }> };
+            user?: { status?: string; church?: { id: string } | null };
           }>('/auth/me');
-          const approved = (me?.user?.memberships ?? []).find(
-            (m) => m.status === 'APPROVED' && m.church?.id,
-          );
-          targetId = approved?.church?.id || undefined;
+          if (me?.user?.status?.toUpperCase() === 'APPROVED' && me.user.church?.id) {
+            targetId = me.user.church.id;
+          }
         } catch {
           targetId = undefined;
         }

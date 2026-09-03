@@ -54,7 +54,6 @@ export interface User {
   subscriptionStatus?: SubscriptionStatus | null;
   avatarUrl?: string | null;
   campus?: string | null;
-  memberships?: MembershipSummary[];
   createdAt: string;
   updatedAt?: string;
 }
@@ -138,27 +137,33 @@ export interface Membership {
 
 export type ChurchMembership = Membership;
 
-// Shape of the `memberships[]` array returned on `GET /auth/me` for a member.
-// Lightweight — only the fields the client needs to render church state.
-export interface MembershipSummary {
+// Shape of the `user.church` object returned on `GET /auth/me` for a member,
+// alongside the member's own status/joinedAt fields. A member belongs to at
+// most one church, so this is a single object (or null when unaffiliated).
+export interface MeChurch {
   id: string;
-  role: ChurchRole;
-  status: MembershipStatus;
-  isBanned?: boolean;
+  name: string;
+  logoUrl: string | null;
+  city?: string | null;
+}
+
+// The member object returned inside `user` on `GET /auth/me`.
+export interface AuthMeUser {
+  id: string;
+  email: string;
+  isVerified: boolean;
+  role?: ChurchRole | string;
+  status?: MembershipStatus | string;
   joinedAt?: string;
-  church?: {
-    id: string;
-    name: string;
-    logoUrl: string | null;
-    city?: string | null;
-  } | null;
+  isBanned?: boolean;
+  church?: MeChurch | null;
 }
 
 export interface AuthMeResponse {
   status?: string;
   accountType?: 'ADMIN' | 'MEMBER';
   profileComplete?: boolean;
-  user?: User & { memberships?: MembershipSummary[] };
+  user?: AuthMeUser;
 }
 
 export interface ChurchRequest {

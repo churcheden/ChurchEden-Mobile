@@ -92,22 +92,26 @@ describe('churchService.requestToJoinChurch', () => {
 });
 
 describe('churchService.checkJoinRequestStatus', () => {
-  it('picks the most recent membership from /auth/me', async () => {
+  it('reads the member church and status from /auth/me', async () => {
     mocks.get.mockResolvedValue({
       user: {
-        memberships: [
-          { id: 'old', church: { id: 'c1', name: 'Old', city: 'X' }, status: 'APPROVED', joinedAt: '2020-01-01' },
-          { id: 'new', church: { id: 'c2', name: 'New', city: 'Y' }, status: 'PENDING', joinedAt: '2026-01-01' },
-        ],
+        id: 'm1',
+        status: 'PENDING',
+        joinedAt: '2026-01-01T00:00:00Z',
+        church: { id: 'c1', name: 'Grace', city: 'Accra', logoUrl: null },
       },
     });
 
     const req = await churchService.checkJoinRequestStatus();
-    expect(req?.id).toBe('new');
+    expect(req?.id).toBe('m1');
+    expect(req?.churchId).toBe('c1');
+    expect(req?.churchName).toBe('Grace');
+    expect(req?.churchLocation).toBe('Accra');
+    expect(req?.status).toBe('pending');
   });
 
-  it('falls back to the active request when there are no memberships', async () => {
-    mocks.get.mockResolvedValue({ user: { memberships: [] } });
+  it('falls back to the active request when the member has no church', async () => {
+    mocks.get.mockResolvedValue({ user: { id: 'm9', status: 'PENDING', church: null } });
     mocks.post.mockResolvedValue({ id: 'm9', church: { id: 'c9', name: 'Nine' }, status: 'PENDING' });
     await churchService.requestToJoinChurch('c9');
 
@@ -125,7 +129,7 @@ describe('churchService.checkJoinRequestStatus', () => {
 
 describe('churchService.leaveChurch', () => {
   it('POSTs to /churches/:id/leave and clears the active request on success', async () => {
-    mocks.get.mockResolvedValue({ user: { memberships: [{ id: 'm1', church: null, status: 'APPROVED', joinedAt: '2026' }] } });
+    mocks.get.mockResolvedValue({ user: { id: 'm1', status: 'APPROVED', church: { id: 'c1', name: 'Grace' } } });
     await churchService.checkJoinRequestStatus(); // set an active request
 
     mocks.post.mockResolvedValue({});

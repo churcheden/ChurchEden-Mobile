@@ -121,7 +121,8 @@ export async function loadMemberProfile(
   userAvatarUrl?: string | null
 ): Promise<ApiResponse<MemberProfile>> {
   try {
-    const backendProfile = await apiClient.get<BackendMemberProfile>('/members/profile');
+    const res = await apiClient.get<{ status: string; profile: BackendMemberProfile }>('/members/profile');
+    const backendProfile = res?.profile;
     if (backendProfile) {
       const member: Member = {
         id: backendProfile.id,

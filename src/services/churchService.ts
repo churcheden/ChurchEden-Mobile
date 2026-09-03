@@ -93,7 +93,8 @@ class ChurchService {
    */
   async requestToJoinChurch(churchId: string): Promise<ApiResponse<ChurchJoinRequest>> {
     try {
-      const backendRes = await apiClient.post<BackendMembership>('/join-requests', { churchId });
+      const res = await apiClient.post<{ status: string; message?: string; member?: BackendMembership }>('/join-requests', { churchId });
+      const backendRes = res?.member ?? (res as unknown as BackendMembership);
       const joinReq: ChurchJoinRequest = {
         id: backendRes.id || `req_${Date.now()}`,
         churchId,

@@ -140,7 +140,7 @@ export function WelcomeScreen() {
 
       // Step 5: Navigate to an authenticated screen
       if (profileComplete === 'false') {
-        router.replace('/complete-profile');
+        router.replace('/find-church');
       } else {
         router.replace('/find-church');
       }

@@ -34,7 +34,7 @@ export default function AuthCallbackScreen() {
         // Fall through to welcome on storage failure
       }
       if (profileComplete === 'false') {
-        router.replace('/complete-profile');
+        router.replace('/find-church');
       } else {
         router.replace('/find-church');
       }

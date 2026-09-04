@@ -84,9 +84,13 @@ export function CompleteProfileScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const draftDate = useRef({ day: 1, month: 0, year: new Date().getFullYear() - 30 });
+  const [pickerDate, setPickerDate] = useState({ day: 1, month: 0, year: new Date().getFullYear() - 30 });
 
   useEffect(() => {
+    if (!churchId) {
+      router.replace('/find-church');
+      return;
+    }
     let mounted = true;
     (async () => {
       const res = await churchService.getChurchById(churchId);
@@ -103,7 +107,6 @@ export function CompleteProfileScreen() {
     return () => {
       mounted = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [churchId]);
 
   // Debounced auto-save of progress as the user types.
@@ -217,6 +220,11 @@ export function CompleteProfileScreen() {
       }
 
       // 2. Submit join request to backend
+      if (!churchId) {
+        alert('Please select a church first.');
+        router.replace('/find-church');
+        return;
+      }
       const response = await churchService.requestToJoinChurch(churchId);
       if (response.success) {
         await saveProfileDraft(churchId, { ...form, churchId });
@@ -262,13 +270,13 @@ export function CompleteProfileScreen() {
   const openDatePicker = () => {
     if (form.dateOfBirth) {
       const [y, m, d] = form.dateOfBirth.split('-').map(Number);
-      if (y && m && d) draftDate.current = { day: d, month: m - 1, year: y };
+      if (y && m && d) setPickerDate({ day: d, month: m - 1, year: y });
     }
     setShowDatePicker(true);
   };
 
   const confirmDate = () => {
-    const { day, month, year } = draftDate.current;
+    const { day, month, year } = pickerDate;
     const validDays = new Date(year, month + 1, 0).getDate();
     const safeDay = Math.min(day, validDays);
     const value = `${year}-${String(month + 1).padStart(2, '0')}-${String(safeDay).padStart(2, '0')}`;
@@ -463,7 +471,7 @@ export function CompleteProfileScreen() {
 
             {/* Email */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email Address *</Text>
+              <Text style={styles.label}>Contact Email *</Text>
               <View style={[styles.inputWrap, errors.email && styles.inputWrapError]}>
                 <Mail size={17} color="#8A95A5" strokeWidth={2} style={styles.inputIcon} />
                 <TextInput
@@ -610,10 +618,10 @@ export function CompleteProfileScreen() {
                   {DAYS.map((d) => (
                     <TouchableOpacity
                       key={d}
-                      style={[styles.dateItem, draftDate.current.day === d && styles.dateItemActive]}
-                      onPress={() => (draftDate.current = { ...draftDate.current, day: d })}
+                      style={[styles.dateItem, pickerDate.day === d && styles.dateItemActive]}
+                      onPress={() => setPickerDate((prev) => ({ ...prev, day: d }))}
                     >
-                      <Text style={[styles.dateItemText, draftDate.current.day === d && styles.dateItemTextActive]}>
+                      <Text style={[styles.dateItemText, pickerDate.day === d && styles.dateItemTextActive]}>
                         {String(d).padStart(2, '0')}
                       </Text>
                     </TouchableOpacity>
@@ -631,10 +639,10 @@ export function CompleteProfileScreen() {
                   {MONTHS.map((m, idx) => (
                     <TouchableOpacity
                       key={m}
-                      style={[styles.dateItem, draftDate.current.month === idx && styles.dateItemActive]}
-                      onPress={() => (draftDate.current = { ...draftDate.current, month: idx })}
+                      style={[styles.dateItem, pickerDate.month === idx && styles.dateItemActive]}
+                      onPress={() => setPickerDate((prev) => ({ ...prev, month: idx }))}
                     >
-                      <Text style={[styles.dateItemText, draftDate.current.month === idx && styles.dateItemTextActive]}>
+                      <Text style={[styles.dateItemText, pickerDate.month === idx && styles.dateItemTextActive]}>
                         {m}
                       </Text>
                     </TouchableOpacity>
@@ -652,10 +660,10 @@ export function CompleteProfileScreen() {
                   {YEARS.map((y) => (
                     <TouchableOpacity
                       key={y}
-                      style={[styles.dateItem, draftDate.current.year === y && styles.dateItemActive]}
-                      onPress={() => (draftDate.current = { ...draftDate.current, year: y })}
+                      style={[styles.dateItem, pickerDate.year === y && styles.dateItemActive]}
+                      onPress={() => setPickerDate((prev) => ({ ...prev, year: y }))}
                     >
-                      <Text style={[styles.dateItemText, draftDate.current.year === y && styles.dateItemTextActive]}>
+                      <Text style={[styles.dateItemText, pickerDate.year === y && styles.dateItemTextActive]}>
                         {y}
                       </Text>
                     </TouchableOpacity>

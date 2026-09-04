@@ -90,7 +90,7 @@ export function WelcomeScreen() {
       // callback to redirect back to the app, redirect tells it where exactly)
       const res = await apiClient.get<{ status: string; url: string }>(
         '/auth/google/url',
-        { params: { platform: 'mobile', redirect: redirectUri } }
+        { params: { platform: 'mobile', redirect: redirectUri }, auth: false }
       );
       const oauthUrl = res.url;
 
